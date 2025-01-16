@@ -40,6 +40,9 @@ def get_bbhist_txt(bin) -> str:
 def get_instlist_txt(bin) -> str:
     return os.path.join(bin.name, "instlist.txt")
 
+def get_srclist_txt(bin) -> str:
+    return os.path.join(bin.name, "srclist.txt")
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -117,7 +120,7 @@ def build_binary_bbhist(bin, dir: str, variables: dict):
     )
 
 # instlist - all
-def build_binary_instlist(bin, dir):
+def build_binary_instlist(bin):
     instlist_txt = get_instlist_txt(bin)
     bbhist_txt = get_bbhist_txt(bin)
     instlist_py = get_helper("instlist.py")
@@ -131,6 +134,20 @@ def build_binary_instlist(bin, dir):
         },
     )
 
+# srclist - all
+def build_binary_srclist(bin):
+    instlist_txt = get_instlist_txt(bin)
+    srclist_txt = get_srclist_txt(bin)
+    ninja.build(
+        outputs = [srclist_txt],
+        rule = "command",
+        inputs = [instlist_txt, fixup_cmd_path(bin)],
+        variables = {
+            "id": srclist_txt,
+            "cmd": f"llvm-addr2line --exe {fixup_cmd_path(bin)} --output-style=JSON < {instlist_txt} > {srclist_txt}",
+        },
+    )
+
 def build_binary(bin, dir: str):
     variables = {
         "cwd": os.path.join(dir, "run"),
@@ -140,8 +157,9 @@ def build_binary(bin, dir: str):
     # Phase 1: bbhist
     build_binary_bbhist(bin = bin, dir = dir, variables = variables)
 
-    # instlist
-    build_binary_instlist(bin = bin, dir = dir)
+    # instlist, srclist
+    build_binary_instlist(bin)
+    build_binary_srclist(bin)
 
 def build_all():
     for bin in bins:
