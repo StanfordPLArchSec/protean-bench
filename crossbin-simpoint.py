@@ -43,6 +43,9 @@ def get_instlist_txt(bin) -> str:
 def get_srclist_txt(bin) -> str:
     return os.path.join(bin.name, "srclist.txt")
 
+def get_srclocs_txt(bin) -> str:
+    return os.path.join(bin.name, "srclocs.txt")
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -148,6 +151,22 @@ def build_binary_srclist(bin):
         },
     )
 
+# srclocs - all
+def build_binary_srclocs(bin):
+    srclocs_txt = get_srclocs_txt(bin)
+    srclist_txt = get_srclist_txt(bin)
+    srclocs_py = get_helper("srclocs.py")
+    ninja.build(
+        outputs = [srclocs_txt],
+        rule = "command",
+        inputs = [srclist_txt, srclocs_py],
+        variables = {
+            "id": srclocs_txt,
+            "cmd": f"{srclocs_py} < {srclist_txt} > {srclocs_txt}",
+        },
+    )
+    
+
 def build_binary(bin, dir: str):
     variables = {
         "cwd": os.path.join(dir, "run"),
@@ -160,6 +179,7 @@ def build_binary(bin, dir: str):
     # instlist, srclist
     build_binary_instlist(bin)
     build_binary_srclist(bin)
+    build_binary_srclocs(bin)
 
 def build_all():
     for bin in bins:
