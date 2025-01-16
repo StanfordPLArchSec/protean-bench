@@ -28,6 +28,18 @@ def parse_subopts(s):
         d[key] = value
     return d
 
+def get_helper_dir():
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "helpers"))
+
+def get_helper(name):
+    return os.path.join(get_helper_dir(), name)
+
+def get_bbhist_txt(bin) -> str:
+    return os.path.join(bin.name, "bbhist.txt")
+
+def get_instlist_txt(bin) -> str:
+    return os.path.join(bin.name, "instlist.txt")
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -60,6 +72,7 @@ for bin in bins:
     os.symlink(os.path.abspath(bin.cwd), rundir)
 
 # Ninja Rules
+# TODO: Remove in favor of 'command'.
 def make_gem5_pincpu_run_cmd(config, script_args):
     return f"if [ -d $outdir ]; then rm -r $outdir; fi && mkdir -p $outdir && /usr/bin/time -vo $outdir/time.txt {args.gem5_exe} {shared_gem5_exe_args} -d $outdir {config} {shared_gem5_script_args} --chdir=$cwd {script_args} -- $bench_exe {args.args}"
 
@@ -68,6 +81,13 @@ ninja.rule(
     command = make_gem5_pincpu_run_cmd(config = os.path.join(args.gem5_configs, "pin-bbhist.py"), script_args = f"--bbhist=$bbhist"),
     description = "$outdir",
     restat = True,
+)
+
+ninja.rule(
+    name = "command",
+    command = "$cmd",
+    description = "$id",
+    restat = True
 )
 
 # Ninja Builds.
@@ -80,9 +100,10 @@ def fixup_cmd_path(bin) -> str:
         assert os.path.isfile(cmd)
         return cmd
 
+# bbhist - all
 def build_binary_bbhist(bin, dir: str, variables: dict):
     outdir = f"{dir}/bbhist"
-    bbhist_txt = f"{dir}/bbhist.txt"
+    bbhist_txt = get_bbhist_txt(bin)
     bbhist_py = f"{args.gem5_configs}/pin-bbhist.py"
     ninja.build(
         outputs = [bbhist_txt],
@@ -95,6 +116,21 @@ def build_binary_bbhist(bin, dir: str, variables: dict):
         },
     )
 
+# instlist - all
+def build_binary_instlist(bin, dir):
+    instlist_txt = get_instlist_txt(bin)
+    bbhist_txt = get_bbhist_txt(bin)
+    instlist_py = get_helper("instlist.py")
+    ninja.build(
+        outputs = [instlist_txt],
+        rule = "command",
+        inputs = [bbhist_txt, instlist_py],
+        variables = {
+            "id": instlist_txt,
+            "cmd": f"{instlist_py} < {bbhist_txt} > {instlist_txt}",
+        },
+    )
+
 def build_binary(bin, dir: str):
     variables = {
         "cwd": os.path.join(dir, "run"),
@@ -103,6 +139,9 @@ def build_binary(bin, dir: str):
 
     # Phase 1: bbhist
     build_binary_bbhist(bin = bin, dir = dir, variables = variables)
+
+    # instlist
+    build_binary_instlist(bin = bin, dir = dir)
 
 def build_all():
     for bin in bins:
