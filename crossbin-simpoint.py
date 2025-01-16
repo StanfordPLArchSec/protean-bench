@@ -34,6 +34,7 @@ def get_helper_dir():
 def get_helper(name):
     return os.path.join(get_helper_dir(), name)
 
+# TODO: Replace these with members of bin's.
 def get_bbhist_txt(bin) -> str:
     return os.path.join(bin.name, "bbhist.txt")
 
@@ -51,6 +52,9 @@ def get_lehist_txt(bin) -> str:
 
 def get_shlocedges_txt() -> str:
     return "shlocedges.txt"
+
+def get_waypoints_txt(bin) -> str:
+    return os.path.join(bin.name, "waypoints.txt")
 
 # Parse binary specifications
 bins = []
@@ -146,6 +150,7 @@ def build_binary_srclist(bin):
     )
 
 # srclocs - all
+# TODO: Rename to locmap.txt?
 def build_binary_srclocs(bin):
     srclocs_txt = get_srclocs_txt(bin)
     srclist_txt = get_srclist_txt(bin)
@@ -188,7 +193,22 @@ def build_shlocedges(lehist_txts: list):
             "cmd": "{} {} > {}".format(shlocedges_py, " ".join(lehist_txts), shlocedges_txt),
         },
     )
-        
+
+def build_binary_waypoints(bin):
+    waypoints_txt = get_waypoints_txt(bin)
+    bbhist_txt = get_bbhist_txt(bin)
+    shlocedges_txt = get_shlocedges_txt()
+    srclocs_txt = get_srclocs_txt(bin)
+    waypoints_py = get_helper("waypoints.py")
+    ninja.build(
+        outputs = [waypoints_txt],
+        rule = "command",
+        inputs = [waypoints_py, bbhist_txt, shlocedges_txt, srclocs_txt],
+        variables = {
+            "id": waypoints_txt,
+            "cmd": f"{waypoints_py} --bbhist={bbhist_txt} --shlocedges={shlocedges_txt} --srclocs={srclocs_txt} > {waypoints_txt}",
+        },
+    )
 
 def build_all(bins):
     for bin in bins:
@@ -200,5 +220,8 @@ def build_all(bins):
 
     # Compute shared srcloc edges.
     build_shlocedges([get_lehist_txt(bin) for bin in bins])
+
+    for bin in bins:
+        build_binary_waypoints(bin)
 
 build_all(bins)
