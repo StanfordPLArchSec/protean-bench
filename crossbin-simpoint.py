@@ -57,6 +57,10 @@ bins = []
 for bin in args.bin:
     bin = types.SimpleNamespace(**parse_subopts(bin))
     bin.cwd = os.path.abspath(bin.cwd)
+    if os.path.isabs(args.cmd):
+        bin.exe = args.cmd
+    else:
+        bin.exe = os.path.join(bin.cwd, args.cmd)
     bins.append(bin)
 
 # Gather (shared) gem5 exe args.
@@ -82,20 +86,11 @@ for bin in bins:
         assert os.path.islink(rundir)
         os.unlink(rundir)
     os.symlink(os.path.abspath(bin.cwd), rundir)
-
-# TODO: Just make the path absolute from the get-go.
-def fixup_cmd_path(bin) -> str:
-    if os.path.isabs(args.cmd):
-        return args.cmd
-    else:
-        cmd = os.path.join(bin.cwd, args.cmd)
-        assert os.path.isfile(cmd)
-        return cmd
     
 # Ninja Rules
 # TODO: Remove in favor of 'command'.
 def make_gem5_pincpu_run_cmd(bin, outdir, gem5_config, gem5_script_args):
-    return f"if [ -d {outdir} ]; then rm -r {outdir}; fi && mkdir -p {outdir} && /usr/bin/time -vo {outdir}/time.txt {args.gem5_exe} {shared_gem5_exe_args} -d {outdir} {gem5_config} {shared_gem5_script_args} --chdir={bin.name}/run {gem5_script_args} -- {fixup_cmd_path(bin)} {args.args}"
+    return f"if [ -d {outdir} ]; then rm -r {outdir}; fi && mkdir -p {outdir} && /usr/bin/time -vo {outdir}/time.txt {args.gem5_exe} {shared_gem5_exe_args} -d {outdir} {gem5_config} {shared_gem5_script_args} --chdir={bin.name}/run {gem5_script_args} -- {bin.exe} {args.args}"
 
 ninja.rule(
     name = "command",
@@ -114,7 +109,7 @@ def build_binary_bbhist(bin):
     ninja.build(
         outputs = [bbhist_txt],
         rule = "command",
-        inputs = [args.gem5_exe, bbhist_py, fixup_cmd_path(bin)],
+        inputs = [args.gem5_exe, bbhist_py, bin.exe],
         variables = {
             "id": bbhist_txt,
             "cmd": make_gem5_pincpu_run_cmd(bin = bin, outdir = outdir, gem5_config = bbhist_py, gem5_script_args = f"--bbhist={bbhist_txt}"),
@@ -143,10 +138,10 @@ def build_binary_srclist(bin):
     ninja.build(
         outputs = [srclist_txt],
         rule = "command",
-        inputs = [instlist_txt, fixup_cmd_path(bin)],
+        inputs = [instlist_txt, bin.exe],
         variables = {
             "id": srclist_txt,
-            "cmd": f"llvm-addr2line --exe {fixup_cmd_path(bin)} --output-style=JSON < {instlist_txt} > {srclist_txt}",
+            "cmd": f"llvm-addr2line --exe {bin.exe} --output-style=JSON < {instlist_txt} > {srclist_txt}",
         },
     )
 
