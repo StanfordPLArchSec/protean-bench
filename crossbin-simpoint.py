@@ -72,6 +72,9 @@ def get_intervals_txt(bin) -> str:
 def get_weights_txt(bin) -> str:
     return os.path.join(bin.name, "weights.txt")
 
+def get_simpoints_json() -> str:
+    return "simpoints.json"
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -257,7 +260,23 @@ def build_binary_intervals(bin):
             "cmd": f"if [ -d {outdir} ]; then rm -r {outdir}; fi && mkdir {outdir} && {args.simpoint} -loadFVFile {bbv_txt} -maxK {args.num_simpoints} -saveSimpoints {intervals_txt} -saveSimpointWeights {weights_txt} -fixedLength off > {outdir}/stdout 2> {outdir}/stderr",
         },
     )
-    
+
+def build_simpoints_json(bin):
+    simpoints_py = get_helper("simpoints.py")
+    simpoints_json = get_simpoints_json()
+    intervals_txt = get_intervals_txt(bin)
+    weights_txt = get_weights_txt(bin)
+    bbvinfo_txt = get_bbvinfo_txt(bin)
+    ninja.build(
+        outputs = [simpoints_json],
+        rule = "command",
+        inputs = [simpoints_py, intervals_txt, weights_txt],
+        variables = {
+            "id": simpoints_json,
+            "cmd": f"{simpoints_py} --intervals={intervals_txt} --weights={weights_txt} --bbvinfo={bbvinfo_txt} > {simpoints_json}",
+        },
+    )
+
 def build_all(bins):
     for bin in bins:
         build_binary_bbhist(bin)
@@ -274,5 +293,6 @@ def build_all(bins):
 
     build_binary_bbv(bins[0])
     build_binary_intervals(bins[0])
+    build_simpoints_json(bins[0])
 
 build_all(bins)
