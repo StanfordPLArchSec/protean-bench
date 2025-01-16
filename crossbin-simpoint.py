@@ -46,6 +46,9 @@ def get_srclist_txt(bin) -> str:
 def get_srclocs_txt(bin) -> str:
     return os.path.join(bin.name, "srclocs.txt")
 
+def get_lehist_txt(bin) -> str:
+    return os.path.join(bin.name, "lehist.txt")
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -165,7 +168,22 @@ def build_binary_srclocs(bin):
             "cmd": f"{srclocs_py} < {srclist_txt} > {srclocs_txt}",
         },
     )
-    
+
+# lehist - all
+def build_binary_lehist(bin):
+    lehist_txt = get_lehist_txt(bin)
+    bbhist_txt = get_bbhist_txt(bin)
+    srclocs_txt = get_srclocs_txt(bin)
+    lehist_py = get_helper("lehist.py")
+    ninja.build(
+        outputs = [lehist_txt],
+        rule = "command",
+        inputs = [lehist_py, bbhist_txt, srclocs_txt],
+        variables = {
+            "id": lehist_txt,
+            "cmd": f"{lehist_py} --bbhist {bbhist_txt} --srclocs {srclocs_txt} > {lehist_txt}",
+        },
+    )
 
 def build_binary(bin, dir: str):
     variables = {
@@ -177,9 +195,11 @@ def build_binary(bin, dir: str):
     build_binary_bbhist(bin = bin, dir = dir, variables = variables)
 
     # instlist, srclist
+    # TODO: These can be piped to each other.
     build_binary_instlist(bin)
     build_binary_srclist(bin)
     build_binary_srclocs(bin)
+    build_binary_lehist(bin)
 
 def build_all():
     for bin in bins:
