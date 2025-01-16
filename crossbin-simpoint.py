@@ -15,6 +15,8 @@ parser.add_argument("--stdin", default = "/dev/null")
 parser.add_argument("--outdir", "-o", required = True)
 parser.add_argument("--gem5-exe", required = True, type = os.path.abspath)
 parser.add_argument("--gem5-configs", required = True, type = os.path.abspath)
+parser.add_argument("--warmup", type = int, default = 10000000)
+parser.add_argument("--interval", type = int, default = 50000000)
 args = parser.parse_args()
 args.args = " ".join(args.args)
 
@@ -55,6 +57,12 @@ def get_shlocedges_txt() -> str:
 
 def get_waypoints_txt(bin) -> str:
     return os.path.join(bin.name, "waypoints.txt")
+
+def get_bbv_txt(bin) -> str:
+    return os.path.join(bin.name, "bbv.txt")
+
+def get_bbvinfo_txt(bin) -> str:
+    return os.path.join(bin.name, "bbvinfo.txt")
 
 # Parse binary specifications
 bins = []
@@ -108,6 +116,7 @@ ninja.rule(
 # bbhist - all
 def build_binary_bbhist(bin):
     outdir = f"{bin.name}/bbhist"
+    # TODO: Make function.
     bbhist_py = os.path.join(args.gem5_configs, "pin-bbhist.py")
     bbhist_txt = get_bbhist_txt(bin)
     ninja.build(
@@ -210,6 +219,22 @@ def build_binary_waypoints(bin):
         },
     )
 
+def build_binary_bbv(bin):
+    bbv_txt = get_bbv_txt(bin)
+    bbvinfo_txt = get_bbvinfo_txt(bin)
+    waypoints_txt = get_waypoints_txt(bin)
+    # TODO: Make function.
+    bbv_py = os.path.join(args.gem5_configs, "pin-bbv.py")
+    ninja.build(
+        outputs = [bbv_txt, bbvinfo_txt],
+        rule = "command",
+        inputs = [args.gem5_exe, bbv_py, waypoints_txt],
+        variables = {
+            "id": bbv_txt,
+            "cmd": make_gem5_pincpu_run_cmd(bin = bin, outdir = os.path.join(bin.name, "bbv"), gem5_config = bbv_py, gem5_script_args = f"--bbv={bbv_txt} --bbvinfo={bbvinfo_txt} --warmup={args.warmup} --interval={args.interval} --waypoints={waypoints_txt}"),
+        },
+    )
+    
 def build_all(bins):
     for bin in bins:
         build_binary_bbhist(bin)
@@ -223,5 +248,7 @@ def build_all(bins):
 
     for bin in bins:
         build_binary_waypoints(bin)
+
+    build_binary_bbv(bins[0])
 
 build_all(bins)
