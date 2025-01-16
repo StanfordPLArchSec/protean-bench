@@ -83,17 +83,19 @@ for bin in bins:
         os.unlink(rundir)
     os.symlink(os.path.abspath(bin.cwd), rundir)
 
+# TODO: Just make the path absolute from the get-go.
+def fixup_cmd_path(bin) -> str:
+    if os.path.isabs(args.cmd):
+        return args.cmd
+    else:
+        cmd = os.path.join(bin.cwd, args.cmd)
+        assert os.path.isfile(cmd)
+        return cmd
+    
 # Ninja Rules
 # TODO: Remove in favor of 'command'.
-def make_gem5_pincpu_run_cmd(config, script_args):
-    return f"if [ -d $outdir ]; then rm -r $outdir; fi && mkdir -p $outdir && /usr/bin/time -vo $outdir/time.txt {args.gem5_exe} {shared_gem5_exe_args} -d $outdir {config} {shared_gem5_script_args} --chdir=$cwd {script_args} -- $bench_exe {args.args}"
-
-ninja.rule(
-    name = "bbhist",
-    command = make_gem5_pincpu_run_cmd(config = os.path.join(args.gem5_configs, "pin-bbhist.py"), script_args = f"--bbhist=$bbhist"),
-    description = "$outdir",
-    restat = True,
-)
+def make_gem5_pincpu_run_cmd(bin, outdir, gem5_config, gem5_script_args):
+    return f"if [ -d {outdir} ]; then rm -r {outdir}; fi && mkdir -p {outdir} && /usr/bin/time -vo {outdir}/time.txt {args.gem5_exe} {shared_gem5_exe_args} -d {outdir} {gem5_config} {shared_gem5_script_args} --chdir={bin.name}/run {gem5_script_args} -- {fixup_cmd_path(bin)} {args.args}"
 
 ninja.rule(
     name = "command",
@@ -104,27 +106,18 @@ ninja.rule(
 
 # Ninja Builds.
 
-def fixup_cmd_path(bin) -> str:
-    if os.path.isabs(args.cmd):
-        return args.cmd
-    else:
-        cmd = os.path.join(bin.cwd, args.cmd)
-        assert os.path.isfile(cmd)
-        return cmd
-
 # bbhist - all
-def build_binary_bbhist(bin, dir: str, variables: dict):
-    outdir = f"{dir}/bbhist"
+def build_binary_bbhist(bin):
+    outdir = f"{bin.name}/bbhist"
+    bbhist_py = os.path.join(args.gem5_configs, "pin-bbhist.py")
     bbhist_txt = get_bbhist_txt(bin)
-    bbhist_py = f"{args.gem5_configs}/pin-bbhist.py"
     ninja.build(
         outputs = [bbhist_txt],
-        rule = "bbhist",
+        rule = "command",
         inputs = [args.gem5_exe, bbhist_py, fixup_cmd_path(bin)],
         variables = {
-            **variables,
-            "outdir": outdir,
-            "bbhist": bbhist_txt,
+            "id": bbhist_txt,
+            "cmd": make_gem5_pincpu_run_cmd(bin = bin, outdir = outdir, gem5_config = bbhist_py, gem5_script_args = f"--bbhist={bbhist_txt}"),
         },
     )
 
@@ -189,13 +182,8 @@ def build_binary_lehist(bin):
     )
 
 def build_binary_phase1(bin, dir: str):
-    variables = {
-        "cwd": os.path.join(dir, "run"),
-        "bench_exe": fixup_cmd_path(bin),
-    }
-
     # Phase 1: bbhist
-    build_binary_bbhist(bin = bin, dir = dir, variables = variables)
+    build_binary_bbhist(bin)
 
     # instlist, srclist
     # TODO: These can be piped to each other.
