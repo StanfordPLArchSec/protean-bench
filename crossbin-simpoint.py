@@ -49,6 +49,9 @@ def get_srclocs_txt(bin) -> str:
 def get_lehist_txt(bin) -> str:
     return os.path.join(bin.name, "lehist.txt")
 
+def get_shlocedges_txt() -> str:
+    return "shlocedges.txt"
+
 # Parse binary specifications
 bins = []
 for bin in args.bin:
@@ -185,7 +188,7 @@ def build_binary_lehist(bin):
         },
     )
 
-def build_binary(bin, dir: str):
+def build_binary_phase1(bin, dir: str):
     variables = {
         "cwd": os.path.join(dir, "run"),
         "bench_exe": fixup_cmd_path(bin),
@@ -201,8 +204,26 @@ def build_binary(bin, dir: str):
     build_binary_srclocs(bin)
     build_binary_lehist(bin)
 
-def build_all():
-    for bin in bins:
-        build_binary(bin = bin, dir = bin.name)
+def build_shlocedges(lehist_txts: list):
+    shlocedges_txt = get_shlocedges_txt()
+    shlocedges_py = get_helper("shlocedges.py")
+    ninja.build(
+        outputs = [shlocedges_txt],
+        rule = "command",
+        inputs = [shlocedges_py, *lehist_txts],
+        variables = {
+            "id": shlocedges_txt,
+            "cmd": "{} {} > {}".format(shlocedges_py, " ".join(lehist_txts), shlocedges_txt),
+        },
+    )
+        
 
-build_all()
+def build_all(bins):
+    # Phase 1.
+    for bin in bins:
+        build_binary_phase1(bin = bin, dir = bin.name)
+
+    # Compute shared srcloc edges.
+    build_shlocedges([get_lehist_txt(bin) for bin in bins])
+
+build_all(bins)
