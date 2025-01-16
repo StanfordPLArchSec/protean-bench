@@ -17,6 +17,8 @@ parser.add_argument("--gem5-exe", required = True, type = os.path.abspath)
 parser.add_argument("--gem5-configs", required = True, type = os.path.abspath)
 parser.add_argument("--warmup", type = int, default = 10000000)
 parser.add_argument("--interval", type = int, default = 50000000)
+parser.add_argument("--simpoint", required = True, type = os.path.abspath)
+parser.add_argument("--num-simpoints", "-k", type = int, default = 10)
 args = parser.parse_args()
 args.args = " ".join(args.args)
 
@@ -63,6 +65,12 @@ def get_bbv_txt(bin) -> str:
 
 def get_bbvinfo_txt(bin) -> str:
     return os.path.join(bin.name, "bbvinfo.txt")
+
+def get_intervals_txt(bin) -> str:
+    return os.path.join(bin.name, "intervals.txt")
+
+def get_weights_txt(bin) -> str:
+    return os.path.join(bin.name, "weights.txt")
 
 # Parse binary specifications
 bins = []
@@ -234,6 +242,21 @@ def build_binary_bbv(bin):
             "cmd": make_gem5_pincpu_run_cmd(bin = bin, outdir = os.path.join(bin.name, "bbv"), gem5_config = bbv_py, gem5_script_args = f"--bbv={bbv_txt} --bbvinfo={bbvinfo_txt} --warmup={args.warmup} --interval={args.interval} --waypoints={waypoints_txt}"),
         },
     )
+
+def build_binary_intervals(bin):
+    outdir = os.path.join(bin.name, "intervals")
+    intervals_txt = get_intervals_txt(bin)
+    weights_txt = get_weights_txt(bin)
+    bbv_txt = get_bbv_txt(bin)
+    ninja.build(
+        outputs = [intervals_txt, weights_txt],
+        rule = "command",
+        inputs = [bbv_txt],
+        variables = {
+            "id": intervals_txt,
+            "cmd": f"if [ -d {outdir} ]; then rm -r {outdir}; fi && mkdir {outdir} && {args.simpoint} -loadFVFile {bbv_txt} -maxK {args.num_simpoints} -saveSimpoints {intervals_txt} -saveSimpointWeights {weights_txt} -fixedLength off > {outdir}/stdout 2> {outdir}/stderr",
+        },
+    )
     
 def build_all(bins):
     for bin in bins:
@@ -250,5 +273,6 @@ def build_all(bins):
         build_binary_waypoints(bin)
 
     build_binary_bbv(bins[0])
+    build_binary_intervals(bins[0])
 
 build_all(bins)
