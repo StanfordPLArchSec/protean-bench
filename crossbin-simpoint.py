@@ -176,17 +176,6 @@ def build_binary_lehist(bin):
         },
     )
 
-def build_binary_phase1(bin, dir: str):
-    # Phase 1: bbhist
-    build_binary_bbhist(bin)
-
-    # instlist, srclist
-    # TODO: These can be piped to each other.
-    build_binary_instlist(bin)
-    build_binary_srclist(bin)
-    build_binary_srclocs(bin)
-    build_binary_lehist(bin)
-
 def build_shlocedges(lehist_txts: list):
     shlocedges_txt = get_shlocedges_txt()
     shlocedges_py = get_helper("shlocedges.py")
@@ -202,9 +191,12 @@ def build_shlocedges(lehist_txts: list):
         
 
 def build_all(bins):
-    # Phase 1.
     for bin in bins:
-        build_binary_phase1(bin = bin, dir = bin.name)
+        build_binary_bbhist(bin)
+        build_binary_instlist(bin)
+        build_binary_srclist(bin)
+        build_binary_srclocs(bin)
+        build_binary_lehist(bin)
 
     # Compute shared srcloc edges.
     build_shlocedges([get_lehist_txt(bin) for bin in bins])
