@@ -277,6 +277,22 @@ def build_simpoints_json(bin):
         },
     )
 
+def build_binary_checkpoint(bin):
+    simpoints_json = get_simpoints_json()
+    outdir = os.path.join(bin.name, "cpt")
+    checkpoint_py = os.path.join(args.gem5_configs, "pin-cpt.py")
+    waypoints_txt = get_waypoints_txt(bin)
+    time_txt = os.path.join(outdir, "time.txt")
+    ninja.build(
+        outputs = [time_txt],
+        rule = "command",
+        inputs = [args.gem5_exe, checkpoint_py, bin.exe, waypoints_txt, simpoints_json],
+        variables = {
+            "id": outdir,
+            "cmd": make_gem5_pincpu_run_cmd(bin = bin, outdir = outdir, gem5_config = checkpoint_py, gem5_script_args = f"--simpoints-json={simpoints_json} --waypoints={waypoints_txt}"),
+        },
+    )
+
 def build_all(bins):
     for bin in bins:
         build_binary_bbhist(bin)
@@ -294,5 +310,9 @@ def build_all(bins):
     build_binary_bbv(bins[0])
     build_binary_intervals(bins[0])
     build_simpoints_json(bins[0])
+
+    # Finally, take checkpoints.
+    for bin in bins:
+        build_binary_checkpoint(bin)
 
 build_all(bins)
