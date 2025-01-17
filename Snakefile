@@ -74,3 +74,15 @@ rule shlocedges:
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt"
     shell:
         "{input.shlocedges_py} {input.lehist_txts} > {output.shlocedges_txt}"
+
+rule waypoints:
+    input:
+        bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
+        srclocs_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/srclocs.txt",
+        shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt",
+        waypoints_py = "helpers/waypoints.py",
+    output:
+        waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
+    shell:
+        "{input.waypoints_py} --bbhist={input.bbhist_txt} --srclocs={input.srclocs_txt} --shlocedges={input.shlocedges_txt} > {output.waypoints_txt}"
+
