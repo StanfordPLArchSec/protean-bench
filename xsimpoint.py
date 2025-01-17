@@ -106,6 +106,8 @@ for bin in bins:
     rundir = os.path.join(dir, "run")
     # TODO: Make paths relative, if possible?
     if os.path.exists(rundir):
+        if os.path.realpath(rundir) == os.path.realpath(bin.cwd):
+            continue
         assert os.path.islink(rundir)
         os.unlink(rundir)
     os.symlink(os.path.abspath(bin.cwd), rundir)
@@ -316,6 +318,8 @@ def build_all(bins):
         build_binary_checkpoint(bin)
 
 build_all(bins)
+
+f.close()
 
 # Then run ninja.
 os.system("ninja")
