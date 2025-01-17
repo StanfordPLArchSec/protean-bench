@@ -2,7 +2,7 @@
 
 import argparse
 import types
-import ninja_syntax
+import helpers.ninja_syntax as ninja_syntax
 import os
 
 parser = argparse.ArgumentParser()
@@ -316,3 +316,7 @@ def build_all(bins):
         build_binary_checkpoint(bin)
 
 build_all(bins)
+
+# Then run ninja.
+os.system("ninja")
+
