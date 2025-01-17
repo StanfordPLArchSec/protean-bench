@@ -81,4 +81,5 @@ for checkpoint, deps in checkpoints.items():
         },
     )
 
-
+# Run ninja.
+os.system("ninja")
