@@ -23,6 +23,7 @@ rule bbhist:
         bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
     params:
         bindir = "{bench}/bin/{bin}",
+        # TODO: Remove this.
         exe = "{bench}/bin/{bin}/exe",
         rundir = "{bench}/bin/{bin}/run",
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist",
@@ -148,4 +149,23 @@ rule simpoints_json:
     shell:
         "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
 
-        
+checkpoint checkpoint:
+    input:
+        simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
+        waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
+        gem5 = gem5_pin_exe,
+        checkpoint_py = gem5_pin_configs + "/pin-cpt.py",
+        exe = "{bench}/bin/{bin}/exe",
+        argfile = "{bench}/inputs/{input}",
+    output:
+        directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt")
+    params:
+        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
+        rundir = "{bench}/bin/{bin}/run",
+    shell:
+        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && " \
+        "{input.gem5} -re --silent-redirect -d {params.outdir} " \
+        "{input.checkpoint_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt " \
+        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} " \
+        "--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt} " \
+        "-- {input.exe} $(cat {input.argfile})"
