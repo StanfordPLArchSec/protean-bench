@@ -10,6 +10,8 @@ bingroups = {
 
 warmup = 10000000
 interval = 50000000
+simpoint_exe = "../simpoint/bin/simpoint"
+num_simpoints = 10
 
 rule bbhist:
     input:
@@ -111,3 +113,39 @@ rule bbv:
         "--warmup={params.warmup} --interval={params.interval} --waypoints={input.waypoints_txt} "
         "-- {input.exe} $(cat {input.argfile})"
 
+rule intervals:
+    input:
+        bbv_txt = "{dir,.*}/bbv.txt",
+        simpoint_exe = simpoint_exe,
+    output:
+        intervals_txt = "{dir,.*}/intervals.txt",
+        weights_txt = "{dir,.*}/weights.txt",
+    params:
+        outdir = "{dir,.*}/intervals",
+        num_simpoints = num_simpoints,
+    shell:
+        "if ! [ -d {params.outdir} ]; then mkdir {params.outdir}; fi && "
+        "{input.simpoint_exe} -loadFVFile {input.bbv_txt} -maxK {params.num_simpoints} -saveSimpoints "
+        "{output.intervals_txt} -saveSimpointWeights {output.weights_txt} -fixedLength off "
+        "> {params.outdir}/stdout 2> {params.outdir}/stderr"
+
+def get_leader_file(filename, wildcards):
+    return expand("{bench}/cpt/{input}/{bingroup}/{bin}/{filename}",
+                  bench=wildcards.bench,
+                  input=wildcards.input,
+                  bingroup=wildcards.bingroup,
+                  bin=bingroups[wildcards.bingroup][0],
+                  filename=filename)
+        
+rule simpoints_json:
+    input:
+        intervals_txt = lambda wildcards: get_leader_file("intervals.txt", wildcards),
+        weights_txt = lambda wildcards: get_leader_file("weights.txt", wildcards),
+        bbvinfo_txt = lambda wildcards: get_leader_file("bbvinfo.txt", wildcards),
+        simpoints_py = "helpers/simpoints.py",
+    output:
+        simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json"
+    shell:
+        "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
+
+        
