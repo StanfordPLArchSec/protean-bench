@@ -4,6 +4,7 @@ import argparse
 import helpers.ninja_syntax as ninja_syntax
 import os
 import glob
+import json
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--outdir", "-o", required=True)
@@ -25,6 +26,9 @@ gem5_py_args = args.gem5_cmd[gem5_py_idx+1:]
 gem5_exe_args.sort()
 gem5_py_args.sort()
 args.gem5_cmd = [gem5_exe, *gem5_exe_args, gem5_py, *gem5_py_args]
+
+def get_helper(name):
+    return os.path.join(os.path.dirname(__file__), "helpers", name)
 
 # Make the output directory and make the ninja file.
 os.makedirs(args.outdir, exist_ok=True)
@@ -81,5 +85,47 @@ for checkpoint, deps in checkpoints.items():
         },
     )
 
+    # Compute weighted average stats.
+    stats = {
+        "system.switch_cpus.numCycles": "cycles",
+        "system.switch_cpus.ipc": "ipc",
+    }
+    generate_leaf_results_py = get_helper("generate-leaf-results.py")
+    results_json = f"{outdir}/results.json"
+    simpoints_json = os.path.join(os.path.dirname(args.indir), "simpoints.json")
+    ninja.build(
+        outputs = [results_json],
+        rule = "command",
+        inputs = [generate_leaf_results_py, simpoints_json, stats_txt],
+        variables = {
+            "id": results_json,
+            "cmd": f"{generate_leaf_results_py} --stats={stats_txt} --simpoints-json={simpoints_json} --simpoint-idx={checkpoint} --output={results_json}",
+        },
+    )
+
+# Generate summarized results.
+results_json = "results.json"
+subresults_json = [f"{checkpoint}/results.json" for checkpoint in checkpoints]
+generate_bench_results_py = get_helper("generate-bench-results.py")
+ninja.build(
+    outputs = [results_json],
+    rule = "command",
+    inputs = [*subresults_json, generate_bench_results_py],
+    variables = {
+        "id": results_json,
+        "cmd": " ".join([generate_bench_results_py, *subresults_json, "--output", results_json]),
+    },
+)
+    
+
+f.close()
+
 # Run ninja.
-os.system("ninja")
+exit_code = os.system("ninja")
+if exit_code != 0:
+    exit(exit_code)
+
+# Print out cycles.
+with open(results_json) as f:
+    j = json.load(f)
+print(j["stats"]["cycles"])
