@@ -8,6 +8,9 @@ bingroups = {
     "main": ["base", "nst"],
 }
 
+warmup = 10000000
+interval = 50000000
+
 rule bbhist:
     input:
         gem5 = gem5_pin_exe,
@@ -85,4 +88,26 @@ rule waypoints:
         waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
     shell:
         "{input.waypoints_py} --bbhist={input.bbhist_txt} --srclocs={input.srclocs_txt} --shlocedges={input.shlocedges_txt} > {output.waypoints_txt}"
+
+rule bbv:
+    input:
+        waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
+        gem5 = gem5_pin_exe,
+        bbv_py = gem5_pin_configs + "/pin-bbv.py",
+        exe = "{bench}/bin/{bin}/exe",
+        argfile = "{bench}/inputs/{input}",
+    output:
+        bbv_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv.txt",
+        bbvinfo_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbvinfo.txt",
+    params:
+        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv",
+        rundir = "{bench}/bin/{bin}/run",
+        warmup = warmup,
+        interval = interval,
+    shell:
+        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
+        "{input.gem5} -re --silent-redirect -d {params.outdir} {input.bbv_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
+        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} --bbv={output.bbv_txt} --bbvinfo={output.bbvinfo_txt} "
+        "--warmup={params.warmup} --interval={params.interval} --waypoints={input.waypoints_txt} "
+        "-- {input.exe} $(cat {input.argfile})"
 
