@@ -169,3 +169,30 @@ checkpoint checkpoint:
         "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} " \
         "--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt} " \
         "-- {input.exe} $(cat {input.argfile})"
+
+rule resume_from_checkpoint:
+    input:
+        cpt_m5 = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt/cpt.{cptid}/m5.cpt",
+        cpt_mem = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt/cpt.{cptid}/system.physmem.store0.pmem",
+        gem5 = "../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt",
+        run_script = "../gem5/{sim}/configs/AlderLake/se.py",
+        exe = "{bench}/bin/{bin}/exe",
+        argfile = "{bench}/inputs/{input}",
+        hwconfig = "hwconfs/{hwconf}",
+    output:
+        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt"
+    params:
+        cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
+        outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+        rundir = "{bench}/bin/{bin}/run",
+    shell:
+        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
+        "{input.gem5} -re --silent-redirect -d {params.outdir} "
+        "{input.run_script} --input=/dev/null --output=stdout.txt --errout=stderr.txt "
+        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} "
+        "--checkpoint-dir={params.cptdir} "
+        "--checkpoint-restore=$(({wildcards.cptid}+1)) "
+        "--restore-simpoint-checkpoint "
+        "--cmd={input.exe} "
+        "--options=\"$(cat {input.argfile})\" "
+        "$(cat {input.hwconfig})"
