@@ -24,30 +24,29 @@ rule build_spec_cpu2017:
         clang = "compilers/{bin}/bin/clang",
         clangxx = "compilers/{bin}/bin/clang++",
         flang = "compilers/{bin}/bin/flang-new",
-        fortran_main = lambda wildcards: glob.glob("compilers/{bin}/lib/libFortran*.a"),
-        # spec_cpu2017_src_files = lambda wildcards: glob.glob(f"{spec_cpu2017_src}/**/*", recursive=True),
-        # test_suite_src_files = lambda wildcards: glob.glob(f"{test_suite_src}/**/*", recursive=True),
-        # test_suite_src_files = f"{test_suite_src}/CMakeLists.txt",
     output:
-        test_suite_build = directory("{bench}/bin/{bin}/test-suite")
+        exe = "{bench}/bin/{bin}/exe",
+        run = directory("{bench}/bin/{bin}/run"),
     params:
         spec_cpu2017_src = spec_cpu2017_src,
         test_suite_src = test_suite_src,
+        test_suite_build = "{bench}/bin/{bin}/test-suite",
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     shell:
-        # Fortran_main: N
-        # FortranRuntime:
-        # FortranDecimal:
-        "cmake -S {params.test_suite_src} -B {output.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
+        "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) -DCMAKE_Fortran_COMPILER=$(realpath {input.flang}) "
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DCMAKE_Fortran_FLAGS='-O2 -g' "
         "-DCMAKE_EXE_LINKER_FLAGS=\"-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath compilers/{wildcards.bin}/lib)\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
-        "&& cmake --build {output.test_suite_build} --target timeit-target "
-        "&& cmake --build {output.test_suite_build} --target {wildcards.bench}"
-
+        "&& cmake --build {params.test_suite_build} --target timeit-target "
+        "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
+        "&& BENCH_DIR=$(find {params.test_suite_build} -name {wildcards.bench} -type d) "
+        "&& BENCH_DIR=$(realpath $BENCH_DIR) "
+        "&& ln -sf $BENCH_DIR/{wildcards.bench} {output.exe} "
+        "&& ln -sf $BENCH_DIR/run_ref {output.run} "
+        
 rule bbhist:
     input:
         gem5 = gem5_pin_exe,
