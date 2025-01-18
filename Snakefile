@@ -36,6 +36,25 @@ rule build_libc:
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
         "&& cmake --build {output.build} --target libc "
 
+rule build_libcxx:
+    input:
+        directory("llvm/{bin}/libcxx"),
+        directory("llvm/{bin}/libcxxabi"),
+        clang = "compilers/{bin}/bin/clang",
+        clangxx = "compilers/{bin}/bin/clang++",
+    output:
+        build = directory("libraries/{bin}/libcxx"),
+        lib_cxx = "libraries/{bin}/libcxx/lib/libc++.a",
+        lib_cxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
+    params:
+        llvm_src = "llvm/{bin}"
+    shell:
+        "rm -rf {output.build} && "
+        "cmake -S {params.llvm_src}/runtimes -B {output.build} -DCMAKE_BUILD_TYPE=Release "
+        "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
+        "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' "
+        "&& ninja --quiet -C {output.build} cxx cxxabi "
+
 rule build_spec_cpu2017:
     input:
         clang = "compilers/{bin}/bin/clang",
