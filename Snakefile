@@ -20,10 +20,11 @@ simpoint_exe = "../simpoint/bin/simpoint"
 num_simpoints = 10
 
 # TODO: Create a base rule from which to inherit that depend on the compiler like this.
+# TODO: Make builds quiet.
 rule build_libc:
     input:
-        clang = "compilers/{bin}/bin/clang",
-        clangxx = "compilers/{bin}/bin/clang++",
+        clang = "compilers/{bin}/llvm/bin/clang",
+        clangxx = "compilers/{bin}/llvm/bin/clang++",
         cflags = "compilers/{bin}/cflags",
         llvm_libc_src = directory("llvm/{bin}/libc"),
     output:
@@ -36,14 +37,15 @@ rule build_libc:
         "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
+        "-Wno-dev --log-level=ERROR "
         "&& cmake --build {output.build} --target libc "
 
 rule build_libcxx:
     input:
         directory("llvm/{bin}/libcxx"),
         directory("llvm/{bin}/libcxxabi"),
-        clang = "compilers/{bin}/bin/clang",
-        clangxx = "compilers/{bin}/bin/clang++",
+        clang = "compilers/{bin}/llvm/bin/clang",
+        clangxx = "compilers/{bin}/llvm/bin/clang++",
     output:
         build = directory("libraries/{bin}/libcxx"),
         lib_cxx = "libraries/{bin}/libcxx/lib/libc++.a",
@@ -54,16 +56,20 @@ rule build_libcxx:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/runtimes -B {output.build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
-        "-DCMAKE_C_FLAGS='$(cat input.cflags)' -DCMAKE_CXX_FLAGS='$(cat input.cflags)' -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' "
+        "-DCMAKE_C_FLAGS=\"$(cat input.cflags)\" -DCMAKE_CXX_FLAGS=\"$(cat input.cflags)\" -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' "
+        "-Wno-dev --log-level=ERROR "
         "&& ninja --quiet -C {output.build} cxx cxxabi "
 
 rule build_spec_cpu2017:
     input:
-        clang = "compilers/{bin}/bin/clang",
-        clangxx = "compilers/{bin}/bin/clang++",
-        flang = "compilers/{bin}/bin/flang-new",
+        clang = "compilers/{bin}/llvm/bin/clang",
+        clangxx = "compilers/{bin}/llvm/bin/clang++",
+        flang = "compilers/{bin}/llvm/bin/flang-new",
         cflags = "compilers/{bin}/cflags",
         fflags = "compilers/{bin}/fflags",
+        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
+        libcxx = "libraries/{bin}/libcxx/lib/libc++.a",
+        libcxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
     output:
         exe = "{bench}/bin/{bin}/exe",
         run = directory("{bench}/bin/{bin}/run"),
@@ -72,7 +78,7 @@ rule build_spec_cpu2017:
         test_suite_src = test_suite_src,
         test_suite_build = "{bench}/bin/{bin}/test-suite",
         cflags = "-nostdinc++ -nostdlib++ -isystem libraries/{bench}/libcxx/include/c++/v1",
-        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/llvm/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     shell:
@@ -83,13 +89,16 @@ rule build_spec_cpu2017:
         "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
+        "-Wno-dev --log-level=ERROR "
         "&& cmake --build {params.test_suite_build} --target timeit-target "
         "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
         "&& BENCH_DIR=$(find {params.test_suite_build} -name {wildcards.bench} -type d) "
         "&& BENCH_DIR=$(realpath $BENCH_DIR) "
         "&& ln -sf $BENCH_DIR/{wildcards.bench} {output.exe} "
         "&& ln -sf $BENCH_DIR/run_ref {output.run} "
-        
+
+# TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
+# Only the shared results should be for the bingroups.
 rule bbhist:
     input:
         gem5 = gem5_pin_exe,
