@@ -19,6 +19,23 @@ interval = 50000000
 simpoint_exe = "../simpoint/bin/simpoint"
 num_simpoints = 10
 
+rule build_libc:
+    input:
+        clang = "compilers/{bin}/bin/clang",
+        clangxx = "compilers/{bin}/bin/clang++",
+        llvm_libc_src = directory("llvm/{bin}/libc"),
+    output:
+        build = directory("libraries/{bin}/libc"),
+        lib = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
+    params:
+        llvm_src = "llvm/{bin}",
+    shell:
+        "rm -rf {output.build} && "
+        "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
+        "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
+        "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
+        "&& cmake --build {output.build} --target libc "
+
 rule build_spec_cpu2017:
     input:
         clang = "compilers/{bin}/bin/clang",
@@ -34,6 +51,7 @@ rule build_spec_cpu2017:
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     shell:
+        "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) -DCMAKE_Fortran_COMPILER=$(realpath {input.flang}) "
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DCMAKE_Fortran_FLAGS='-O2 -g' "
