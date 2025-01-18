@@ -55,7 +55,7 @@ rule build_spec_cpu2017:
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) -DCMAKE_Fortran_COMPILER=$(realpath {input.flang}) "
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DCMAKE_Fortran_FLAGS='-O2 -g' "
-        "-DCMAKE_EXE_LINKER_FLAGS=\"-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath compilers/{wildcards.bin}/lib)\" "
+        "-DCMAKE_EXE_LINKER_FLAGS=\"-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{wildcards.bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{wildcards.bin}/lib)\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
         "&& cmake --build {params.test_suite_build} --target timeit-target "
