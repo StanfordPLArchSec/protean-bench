@@ -67,14 +67,16 @@ rule build_spec_cpu2017:
         spec_cpu2017_src = spec_cpu2017_src,
         test_suite_src = test_suite_src,
         test_suite_build = "{bench}/bin/{bin}/test-suite",
+        cflags = "-g -nostdinc++ -nostdlib++ -isystem libraries/{bench}/libcxx/include/c++/v1",
+        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) -DCMAKE_Fortran_COMPILER=$(realpath {input.flang}) "
-        "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DCMAKE_Fortran_FLAGS='-O2 -g' "
-        "-DCMAKE_EXE_LINKER_FLAGS=\"-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{wildcards.bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{wildcards.bin}/lib)\" "
+        "-DCMAKE_C_FLAGS='-O3 {params.cflags}' -DCMAKE_CXX_FLAGS='-O3 {params.cflags}' -DCMAKE_Fortran_FLAGS='-O2 {params.cflags}' "
+        "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
         "&& cmake --build {params.test_suite_build} --target timeit-target "
