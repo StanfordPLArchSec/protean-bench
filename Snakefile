@@ -170,10 +170,16 @@ checkpoint checkpoint:
         "--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt} " \
         "-- {input.exe} $(cat {input.argfile})"
 
+def get_checkpoint(wildcards):
+    checkpoint_output = checkpoints.checkpoint.get(**wildcards)
+    return expand("{dir}/cpt.{cptid}/{filename}",
+                  dir = checkpoint_output.output,
+                  cptid = wildcards.cptid,
+                  filename = ["m5.cpt", "system.physmem.store0.pmem"])
+
 rule resume_from_checkpoint:
     input:
-        cpt_m5 = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt/cpt.{cptid}/m5.cpt",
-        cpt_mem = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt/cpt.{cptid}/system.physmem.store0.pmem",
+        cpt_data = get_checkpoint,
         gem5 = "../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt",
         run_script = "../gem5/{sim}/configs/AlderLake/se.py",
         exe = "{bench}/bin/{bin}/exe",
