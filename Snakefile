@@ -69,8 +69,8 @@ rule build_libcxx:
         "-Wno-dev --log-level=ERROR "
         "&& ninja --quiet -C {output.build} cxx cxxabi "
 
-# Rules for building the SPEC benchmarks.
-include: "cpu2017.snake"
+# Rules for building the SPEC benchmarks, and for adding the benchmarks to benches.
+include: "rules/cpu2017.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
