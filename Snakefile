@@ -1,5 +1,7 @@
 import glob
 
+container: "ptex.sif"
+
 # TODO: Move these to config file?
 gem5_pin_src = "../gem5/pincpu"
 gem5_pin_exe = gem5_pin_src + "/build/X86/gem5.opt"
@@ -8,6 +10,8 @@ gem5_pin_configs = gem5_pin_src + "/configs"
 addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 spec_cpu2017_src = "../cpu2017"
 test_suite_src = "../test-suite"
+
+# TODO: Investigate why partial build of libc doesn't work.
 
 # TODO: Define these in the filesystem, too.
 bingroups = {
@@ -35,9 +39,10 @@ rule build_libc:
     shell:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
-        "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
+        "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} "
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
         "-Wno-dev --log-level=ERROR "
+        "-DLLVM_ENABLE_LIBCXX=1 "
         "&& cmake --build {output.build} --target libc "
 
 rule build_libcxx:
@@ -56,7 +61,7 @@ rule build_libcxx:
     shell:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/runtimes -B {output.build} -DCMAKE_BUILD_TYPE=Release "
-        "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) "
+        "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} "
         "-DCMAKE_C_FLAGS=\"$(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"$(cat {input.cflags})\" -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' "
         "-Wno-dev --log-level=ERROR "
         "&& ninja --quiet -C {output.build} cxx cxxabi "
@@ -85,7 +90,7 @@ rule build_spec_cpu2017:
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
-        "-DCMAKE_C_COMPILER=$(realpath {input.clang}) -DCMAKE_CXX_COMPILER=$(realpath {input.clangxx}) -DCMAKE_Fortran_COMPILER=$(realpath {input.flang}) "
+        "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} -DCMAKE_Fortran_COMPILER=$PWD/{input.flang} "
         "-DCMAKE_C_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
         "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
