@@ -1,4 +1,7 @@
 import glob
+import sys
+
+import bench
 
 container: "ptex.sif"
 
@@ -8,8 +11,6 @@ gem5_pin_exe = gem5_pin_src + "/build/X86/gem5.opt"
 gem5_pin_configs = gem5_pin_src + "/configs"
 # TODO: Use this using the 'bin' setup.
 addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
-spec_cpu2017_src = "../cpu2017"
-test_suite_src = "../test-suite"
 
 # TODO: Investigate why partial build of libc doesn't work.
 
@@ -36,6 +37,7 @@ rule build_libc:
         lib = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     params:
         llvm_src = "llvm/{bin}"
+    threads: 8
     shell:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
@@ -58,6 +60,7 @@ rule build_libcxx:
         lib_cxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
     params:
         llvm_src = "llvm/{bin}"
+    threads: 8
     shell:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/runtimes -B {output.build} -DCMAKE_BUILD_TYPE=Release "
@@ -66,42 +69,8 @@ rule build_libcxx:
         "-Wno-dev --log-level=ERROR "
         "&& ninja --quiet -C {output.build} cxx cxxabi "
 
-rule build_spec_cpu2017:
-    input:
-        clang = "compilers/{bin}/llvm/bin/clang",
-        clangxx = "compilers/{bin}/llvm/bin/clang++",
-        flang = "compilers/{bin}/llvm/bin/flang-new",
-        cflags = "compilers/{bin}/cflags",
-        fflags = "compilers/{bin}/fflags",
-        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
-        libcxx = "libraries/{bin}/libcxx/lib/libc++.a",
-        libcxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
-    output:
-        exe = "{bench}/bin/{bin}/exe",
-        run = directory("{bench}/bin/{bin}/run"),
-    params:
-        spec_cpu2017_src = spec_cpu2017_src,
-        test_suite_src = test_suite_src,
-        test_suite_build = "{bench}/bin/{bin}/test-suite",
-        cflags = "-nostdinc++ -nostdlib++ -isystem libraries/{bench}/libcxx/include/c++/v1",
-        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/llvm/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
-    wildcard_constraints:
-        bench = r"6\d\d\.[a-zA-Z0-9]+_s"
-    shell:
-        "rm -rf {params.test_suite_build} && "
-        "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
-        "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} -DCMAKE_Fortran_COMPILER=$PWD/{input.flang} "
-        "-DCMAKE_C_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
-        "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
-        "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
-        "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
-        "-Wno-dev --log-level=ERROR "
-        "&& cmake --build {params.test_suite_build} --target timeit-target "
-        "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
-        "&& BENCH_DIR=$(find {params.test_suite_build} -name {wildcards.bench} -type d) "
-        "&& BENCH_DIR=$(realpath $BENCH_DIR) "
-        "&& ln -sf $BENCH_DIR/{wildcards.bench} {output.exe} "
-        "&& ln -sf $BENCH_DIR/run_ref {output.run} "
+# Rules for building the SPEC benchmarks.
+include: "cpu2017.snake"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
@@ -110,7 +79,7 @@ rule bbhist:
         gem5 = gem5_pin_exe,
         bbhist_py = gem5_pin_configs + "/pin-bbhist.py",
         exe = "{bench}/bin/{bin}/exe",
-        argfile = "{bench}/inputs/{input}",
+        argfile = "{bench}/inputs/{input}", # TODO: Remove this.
     output:
         bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
     params:
@@ -119,13 +88,17 @@ rule bbhist:
         exe = "{bench}/bin/{bin}/exe",
         rundir = "{bench}/bin/{bin}/run",
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist",
+        args = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).args,
+        mem = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).mem_size,
+        stack = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).stack_size,
     shell:
-        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && " \
-        "{input.gem5} -re --silent-redirect -d {params.outdir} " \
-        "{input.bbhist_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt " \
-        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} " \
-        "--bbhist={output.bbhist_txt} " \
-        "-- {input.exe} $(cat {input.argfile})"
+        # TODO: Need to specify mem size.
+        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
+        "{input.gem5} -re --silent-redirect -d {params.outdir} "
+        "{input.bbhist_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
+        "--mem-size={params.mem} --max-stack-size={params.stack} --chdir={params.rundir} "
+        "--bbhist={output.bbhist_txt} "
+        "-- {input.exe} {params.args}"
 
 rule instlist:
     input:

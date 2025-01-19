@@ -1,0 +1,44 @@
+benches = []
+
+class Input:
+    def __init__(self, name: str, args: str, stdin: str, mem_size: str, stack_size: str, deps: list):
+        self.name = name
+        self.args = args
+        self.mem_size = mem_size
+        self.stack_size = stack_size
+        self.stdin = stdin
+        self.deps = deps
+
+class Benchmark:
+    def __init__(self, name: str):
+        self.name = name
+        self.inputs = []
+
+    def add_input(self, args: str = "", stdin: str = "/dev/null", mem_size: str = "512MiB", stack_size: str = "8MiB", deps = []):
+        self.inputs.append(Input(
+            name = str(len(self.inputs)),
+            args = args,
+            stdin = stdin,
+            mem_size = mem_size,
+            stack_size = stack_size,
+            deps = deps,
+        ))
+        return self
+
+    def get_input(self, name: str):
+        matches = list(filter(lambda input: input.name == name, self.inputs))
+        if len(matches) != 1:
+            raise KeyError(f"Benchmark {self.name} has no input {name}")
+        return matches[0]
+
+def make_bench(name: str):
+    bench = Benchmark(name)
+    benches.append(bench)
+    return bench
+
+def get_bench(name: str):
+    matches = list(filter(lambda bench: bench.name == name, benches))
+    if len(matches) != 1:
+        raise KeyError(f"Benchmark not found: {name}")
+    return matches[0]
+    
