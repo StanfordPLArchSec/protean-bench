@@ -43,7 +43,7 @@ rule build_libc:
         "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
         "-Wno-dev --log-level=ERROR "
         "-DLLVM_ENABLE_LIBCXX=1 "
-        "&& cmake --build {output.build} --target libc "
+        "&& ninja --quiet -C {output.build} libc "
 
 rule build_libcxx:
     input:
