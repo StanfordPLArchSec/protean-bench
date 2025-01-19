@@ -1,0 +1,1 @@
+-O3 -g -mllvm -x86-ptex=nst -mllvm -x86-ptex-sink -mllvm -x86-ptex-hoist -mllvm -x86-ptex-analyze-branches -mllvm -x86-ptex-flags -mllvm -x86-ptex-split
