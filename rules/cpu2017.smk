@@ -5,31 +5,6 @@ from bench import make_bench
 cpu2017_src = "../cpu2017"
 test_suite_src = "../test-suite"
 
-class Input:
-    def __init__(self, name: str, args: str, stdin: str, mem_size: str, stack_size: str, deps: list):
-        self.name = name
-        self.args = args
-        self.mem_size = mem_size
-        self.stack_size = stack_size
-        self.stdin = stdin
-        self.deps = deps
-
-class Benchmark:
-    def __init__(self, name: str):
-        self.name = name
-        self.inputs = []
-
-    def add_input(self, args: str = "", stdin: str = "/dev/null", mem_size: str = "512MiB", stack_size: str = "8MiB", deps = []):
-        self.inputs.append(Input(
-            name = str(len(self.inputs)),
-            args = args,
-            stdin = stdin,
-            mem_size = mem_size,
-            stack_size = stack_size,
-            deps = deps,
-        ))
-        return self
-
 def get_cpu2017_int() -> list:
     perlbench = make_bench("600.perlbench_s")
     perlbench.add_input("-I./lib checkspam.pl 2500 5 25 11 150 1 1 1 1")
