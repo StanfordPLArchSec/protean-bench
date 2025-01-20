@@ -87,6 +87,8 @@ rule build_spec_cpu2017:
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     threads: 8
+    resources:
+        mem = "4GiB" # Only 602.gcc_s appears to need this, so far.
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
