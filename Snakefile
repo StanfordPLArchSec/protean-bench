@@ -7,7 +7,7 @@ container: "ptex.sif"
 
 # TODO: Move these to config file?
 gem5_pin_src = "../gem5/pincpu"
-gem5_pin_exe = gem5_pin_src + "/build/X86/gem5.opt"
+gem5_pin_exe = gem5_pin_src + "/build/X86_MESI_Three_Level/gem5.opt"
 gem5_pin_configs = gem5_pin_src + "/configs"
 # TODO: Use this using the 'bin' setup.
 addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
