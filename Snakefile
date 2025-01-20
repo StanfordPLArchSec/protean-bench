@@ -92,6 +92,9 @@ rule _pincpu:
         workload_args = lambda wildcards: get_input(wildcards).args,
         mem = lambda wildcards: get_input(wildcards).mem_size,
         stack = lambda wildcards: get_input(wildcards).stack_size,
+    resources:
+        mem_mb = lambda wildcards: get_input(wildcards).mem_mb(),
+        runtime = lambda wildcards: get_input(wildcards).runtime_seconds(),
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
@@ -254,6 +257,8 @@ rule resume_from_checkpoint:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+    resources:
+        **rules._pincpu.resources # TODO: Shouldn't inherit from PinCPU!
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
