@@ -16,7 +16,7 @@ class Input:
         self.deps = deps
         self.runtime = runtime
 
-    def mem_mb(self) -> int:
+    def mem_mib(self) -> int:
         s = self.mem_size
         suffixes = {"MiB": 1, "GiB": 1024}
         for suffix, multiplier in suffixes.items():
