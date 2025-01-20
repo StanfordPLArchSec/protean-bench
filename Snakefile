@@ -69,36 +69,49 @@ rule build_libcxx:
         "-Wno-dev --log-level=ERROR "
         "&& ninja --quiet -C {output.build} cxx cxxabi "
 
-# Rules for building the SPEC benchmarks, and for adding the benchmarks to benches.
-include: "rules/cpu2017.smk"
-
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
-rule bbhist:
+
+def get_input(wildcards):
+    return bench.get_bench(wildcards.bench).get_input(wildcards.input)
+
+# This abstract rule requires:
+# input:
+#   - script: the gem5 run script
+# output:
+#   - ???: the output file produced by the run (stats.txt, etc., not included)
+# params:
+#   - script_args: the arguments to pass to the gem5 run script (input.script)
+#   - outdir: gem5's output directory (containing stats.txt, etc.)
+rule _pincpu:
     input:
         gem5 = gem5_pin_exe,
-        bbhist_py = gem5_pin_configs + "/pin-bbhist.py",
         exe = "{bench}/bin/{bin}/exe",
-        argfile = "{bench}/inputs/{input}", # TODO: Remove this.
-    output:
-        bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
     params:
         bindir = "{bench}/bin/{bin}",
-        # TODO: Remove this.
-        exe = "{bench}/bin/{bin}/exe",
         rundir = "{bench}/bin/{bin}/run",
-        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist",
-        args = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).args,
-        mem = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).mem_size,
-        stack = lambda wildcards: bench.get_bench(wildcards.bench).get_input(wildcards.input).stack_size,
+        workload_args = lambda wildcards: get_input(wildcards).args,
+        mem = lambda wildcards: get_input(wildcards).mem_size,
+        stack = lambda wildcards: get_input(wildcards).stack_size,
     shell:
-        # TODO: Need to specify mem size.
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
-        "{input.bbhist_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
+        "{input.script} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
         "--mem-size={params.mem} --max-stack-size={params.stack} --chdir={params.rundir} "
-        "--bbhist={output.bbhist_txt} "
-        "-- {input.exe} {params.args}"
+        "{params.script_args} "
+        "-- {input.exe} {params.workload_args} "
+
+use rule _pincpu as bbhist with:
+    input:
+        **rules._pincpu.input,
+        script = gem5_pin_configs + "/pin-bbhist.py"
+    output:
+        **rules._pincpu.output,
+        bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
+    params:
+        **rules._pincpu.params,
+        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist",
+        script_args = "--bbhist={bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt" # TODO: Reuse definition of bbhist_txt somehow?
 
 rule instlist:
     input:
@@ -267,3 +280,8 @@ rule resume_from_checkpoint:
         "--cmd={input.exe} "
         "--options=\"$(cat {input.argfile})\" "
         "$(cat {input.hwconfig})"
+
+
+# Rules for building the SPEC benchmarks, and for adding the benchmarks to benches.
+# TODO: Explore putting these into the config file?
+include: "rules/cpu2017.smk"
