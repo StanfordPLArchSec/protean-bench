@@ -78,10 +78,11 @@ rule build_spec_cpu2017:
         exe = "{bench}/bin/{bin}/exe",
         run = directory("{bench}/bin/{bin}/run"),
     params:
+        # TODO: Replace realpath with $PWD for simplicity?
         spec_cpu2017_src = cpu2017_src,
         test_suite_src = test_suite_src,
         test_suite_build = "{bench}/bin/{bin}/test-suite",
-        cflags = "-nostdinc++ -nostdlib++ -isystem libraries/{bench}/libcxx/include/c++/v1",
+        cflags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
         ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/llvm/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
