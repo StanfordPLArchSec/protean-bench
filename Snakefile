@@ -93,7 +93,7 @@ rule _pincpu:
         mem = lambda wildcards: get_input(wildcards).mem_size,
         stack = lambda wildcards: get_input(wildcards).stack_size,
     resources:
-        mem_mb = lambda wildcards: get_input(wildcards).mem_mb(),
+        mem_mb = lambda wildcards: get_input(wildcards).mem_mb() + 512, # Grant an extra 512MiB for gem5.
         runtime = lambda wildcards: get_input(wildcards).runtime_seconds(),
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
@@ -258,7 +258,8 @@ rule resume_from_checkpoint:
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
     resources:
-        **rules._pincpu.rule.resources # TODO: Shouldn't inherit from PinCPU!
+        mem_mb = rules._pincpu.rule.resources["mem_mb"], # TOOD: Shouldn't inherit directly from PinCPU.
+        # TODO: Specify runtime?
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
