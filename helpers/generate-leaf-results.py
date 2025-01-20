@@ -56,16 +56,10 @@ with open(args.stats) as f:
             stat = stats[key]
             stat.value = float(tokens[1])
 
-# expected_insts = simpoint.inst_range[1] - simpoint.inst_range[0]
-# actual_insts = stats[key_insts].value
-# if abs(expected_insts - actual_insts) < 0:
-#     print(f'error: expected {expected_insts} instructions, actual {actual_insts}',
-#           file = sys.stderr)
-#     exit(1)
-
 for stat in stats.values():
-    if stat.required:
-        assert stat.value is not None
+    if stat.required and stat.value is None:
+        print("Didn't find stat {stat.name} in {args.stats}!", file=sys.stderr)
+        exit(1)
 
 def get_stats_dict(stats) -> dict:
     d = dict()
