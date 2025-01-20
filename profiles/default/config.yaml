@@ -1,0 +1,3 @@
+default-resources:
+    slurm_partition: "cafe"
+    slurm_account: "cafe"
