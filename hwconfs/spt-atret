@@ -1,0 +1,1 @@
+--ruby --enable-prefetch --ecore --spt --fwdUntaint=1 --bwdUntaint=1 --enableShadowL1=1 --speculation-model=AtRet
