@@ -285,6 +285,9 @@ rule checkpoint_results:
         "{input.script} --stats={input.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
 
 def get_checkpoint_results_list(wildcards):
+    # Make sure we've executed the checkpoint.
+    # This should ensure that simpoints.json is available, right?
+    checkpoints.checkpoint.get(**wildcards) 
     simpoints_json = expand("{bench}/cpt/{input}/{bingroup}/simpoints.json", **wildcards)
     assert len(simpoints_json) == 1
     simpoints_json = simpoints_json[0]
