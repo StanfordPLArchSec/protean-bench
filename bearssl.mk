@@ -27,7 +27,7 @@ ARFLAGS = -rcs
 AROUT =
 
 LD = $(CC)
-LDFLAGS = -static
+LDFLAGS = -static ${LDFLAGS} -fuse-ld=lld -Wl,--allow-multiple-definition
 LDOUT = -o
 
 DLL = no

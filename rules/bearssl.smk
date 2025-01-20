@@ -8,6 +8,7 @@ rule clone_bearssl:
         cflags = "compilers/{bin}/cflags", # TODO: This should be in a config file.
         patch = "bearssl.patch",
         conf = "bearssl.mk",
+        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     output:
         git_repo = directory("bearssl/bin/{bin}/git"),
     params:
@@ -15,9 +16,11 @@ rule clone_bearssl:
     shell:
         "git clone {params.git_url} {output.git_repo} && "
         "(cd {output.git_repo} && git apply) < {input.patch} && "
-        "CC=$(realpath {input.clang}) CFLAGS=\"$(cat {input.cflags})\" envsubst < {input.conf} > {output.git_repo}/conf/PTeX.mk"
+        "CC=$(realpath {input.clang}) "
+        "CFLAGS=\"$(cat {input.cflags})\" "
+        "LDFLAGS=\"-L$(realpath $(dirname {input.libc})) -lllvmlibc\" "
+        "envsubst < {input.conf} > {output.git_repo}/conf/PTeX.mk"
 
-# TODO: Link against our libc.
 rule build_bearssl:
     input:
         # TODO: Inherit from common rule?
