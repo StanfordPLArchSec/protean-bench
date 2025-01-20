@@ -18,8 +18,10 @@ rule build_djbsort:
     output:
         exe = "djbsort/bin/{bin}/exe",
         run = directory("djbsort/bin/{bin}/run"),
+    params:
+        ldflags = "-static"
     shell:
-        "echo $(realpath {input.clang}) $(cat {input.cflags}) > {input.src}/compilers/c && "
+        "echo $(realpath {input.clang}) $(cat {input.cflags}) {params.ldflags} > {input.src}/compilers/c && "
         "(cd {input.src} && ./build && ./test && ./upgrade) && "
         "ln -sf src/link-install/command/int32-speed {output.exe} && "
         "ln -sf . {output.run}"

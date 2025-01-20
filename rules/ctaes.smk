@@ -20,6 +20,8 @@ rule build_ctaes:
     output:
         exe = "ctaes/bin/{bin}/exe",
         run = directory("ctaes/bin/{bin}/run"),
+    params:
+        ldflags = "-static"
     shell:
-        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} $(cat {input.cflags}) && "
+        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} $(cat {input.cflags}) {params.ldflags} && "
         "ln -sf . {output.run} "
