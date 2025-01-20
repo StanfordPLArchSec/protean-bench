@@ -3,12 +3,15 @@ from bench import make_bench
 make_bench("bearssl").add_input("chacha20_ct")
 
 rule clone_bearssl:
+    input:
+        patch = "bearssl.patch",
     output:
-        git_repo = directory("bearssl/bin/{bin}/git")
+        git_repo = directory("bearssl/bin/{bin}/git"),
     params:
         git_url = "https://www.bearssl.org/git/BearSSL"
     shell:
-        "git clone {params.git_url} {output.git_repo}"
+        "git clone {params.git_url} {output.git_repo} && "
+        "(cd {output.git_repo} && git apply) < {input.patch} "
 
 # TODO: Link against our libc.
 rule build_bearssl:
