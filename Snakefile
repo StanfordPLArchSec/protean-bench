@@ -88,7 +88,6 @@ rule _pincpu:
         gem5 = gem5_pin_exe,
         exe = "{bench}/bin/{bin}/exe",
     params:
-        bindir = "{bench}/bin/{bin}",
         rundir = "{bench}/bin/{bin}/run",
         workload_args = lambda wildcards: get_input(wildcards).args,
         mem = lambda wildcards: get_input(wildcards).mem_size,
@@ -246,27 +245,27 @@ rule resume_from_checkpoint:
     input:
         cpt_data = get_checkpoint,
         gem5 = "../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt",
-        run_script = "../gem5/{sim}/configs/AlderLake/se.py",
         exe = "{bench}/bin/{bin}/exe",
-        argfile = "{bench}/inputs/{input}",
+        run_script = "../gem5/{sim}/configs/AlderLake/se.py",
         hwconfig = "hwconfs/{hwconf}",
     output:
         stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt"
     params:
+        **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
-        rundir = "{bench}/bin/{bin}/run",
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
         "{input.run_script} --input=/dev/null --output=stdout.txt --errout=stderr.txt "
-        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} "
+        "--cpu-type=X86O3CPU "
+        "--mem-size={params.mem} --max-stack-size={params.stack} --chdir={params.rundir} "
         "--checkpoint-dir={params.cptdir} "
         "--checkpoint-restore=$(({wildcards.cptid}+1)) "
         "--restore-simpoint-checkpoint "
         "--cmd={input.exe} "
-        "--options=\"$(cat {input.argfile})\" "
-        "$(cat {input.hwconfig})"
+        "--options=\"{params.workload_args}\" "
+        "$(cat {input.hwconfig})" # TODO: Build this into a config file.
 
 
 # Rules for building the SPEC benchmarks, and for adding the benchmarks to benches.
