@@ -31,6 +31,8 @@ num_simpoints = 10
 include: "rules/libc.smk"
 include: "rules/libcxx.smk"
 include: "rules/cpu2017.smk"
+include: "rules/bearssl.smk"
+include: "rules/ctaes.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
