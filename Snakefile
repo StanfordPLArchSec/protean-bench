@@ -1,5 +1,6 @@
 import glob
 import sys
+import json
 
 import bench
 
@@ -272,6 +273,36 @@ rule resume_from_checkpoint:
         "--cmd={input.exe} "
         "--options=\"{params.workload_args}\" "
         "$(cat {input.hwconfig})" # TODO: Build this into a config file.
+
+rule checkpoint_results:
+    input:
+        script = "helpers/generate-leaf-results.py",
+        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt",
+        simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
+    output:
+        "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/results.json"
+    shell:
+        "{input.script} --stats={input.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
+
+def get_checkpoint_results_list(wildcards):
+    simpoints_json = expand("{bench}/cpt/{input}/{bingroup}/simpoints.json", **wildcards)
+    assert len(simpoints_json) == 1
+    simpoints_json = simpoints_json[0]
+    with open(simpoints_json) as f:
+        j = json.load(f)
+    assert type(j) is list
+    n = len(j)
+    return expand("{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/results.json",
+                  **wildcards, cptid = map(str, range(0, n)))
+
+rule bench_results:
+    input:
+        script = "helpers/generate-bench-results.py",
+        cpt_results = get_checkpoint_results_list,
+    output:
+        "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/results.json"
+    shell:
+        "{input.script} {input.cpt_results} --output={output}"
 
 
 # Rules for building the SPEC benchmarks, and for adding the benchmarks to benches.
