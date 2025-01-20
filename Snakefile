@@ -258,7 +258,7 @@ rule resume_from_checkpoint:
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
     resources:
-        **rules._pincpu.resources # TODO: Shouldn't inherit from PinCPU!
+        **rules._pincpu.rule.resources # TODO: Shouldn't inherit from PinCPU!
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
