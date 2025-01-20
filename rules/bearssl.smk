@@ -4,7 +4,7 @@ make_bench("bearssl").add_input("chacha20_ct")
 
 rule clone_bearssl:
     output:
-        git_repo = directory("{bench}/bin/{bin}/git")
+        git_repo = directory("bearssl/bin/{bin}/git")
     params:
         git_url = "https://www.bearssl.org/git/BearSSL"
     shell:
