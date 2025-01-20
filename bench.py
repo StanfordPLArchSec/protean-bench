@@ -1,4 +1,5 @@
 import math
+import humanfriendly
 
 benches = []
 
@@ -16,13 +17,10 @@ class Input:
         self.deps = deps
         self.runtime = runtime
 
-    def mem_mib(self) -> int:
-        s = self.mem_size
-        suffixes = {"MiB": 1, "GiB": 1024}
-        for suffix, multiplier in suffixes.items():
-            if s.endswith(suffix):
-                return int(s.removesuffix(suffix))
-        raise ValueError(f"Unrecognized human-readable memory size {s}")
+    def mem_plus(self, s: str) -> str:
+        a = humanfriendly.parse_size(self.mem_size)
+        b = humanfriendly.parse_size(s)
+        return humanfriendly.format_size(a + b)
 
     def runtime_seconds(self) -> int:
         return time_to_minutes(self.runtime)
