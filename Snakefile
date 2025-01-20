@@ -170,27 +170,19 @@ rule waypoints:
     shell:
         "{input.waypoints_py} --bbhist={input.bbhist_txt} --srclocs={input.srclocs_txt} --shlocedges={input.shlocedges_txt} > {output.waypoints_txt}"
 
-rule bbv:
+use rule _pincpu as bbv with:
     input:
+        **rules._pincpu.input,
+        script = gem5_pin_configs + "/pin-bbv.py", # TODO: Factor out the prefix.
         waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
-        gem5 = gem5_pin_exe,
-        bbv_py = gem5_pin_configs + "/pin-bbv.py",
-        exe = "{bench}/bin/{bin}/exe",
-        argfile = "{bench}/inputs/{input}",
     output:
+        **rules._pincpu.output,
         bbv_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv.txt",
         bbvinfo_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbvinfo.txt",
     params:
+        **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv",
-        rundir = "{bench}/bin/{bin}/run",
-        warmup = warmup,
-        interval = interval,
-    shell:
-        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
-        "{input.gem5} -re --silent-redirect -d {params.outdir} {input.bbv_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
-        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} --bbv={output.bbv_txt} --bbvinfo={output.bbvinfo_txt} "
-        "--warmup={params.warmup} --interval={params.interval} --waypoints={input.waypoints_txt} "
-        "-- {input.exe} $(cat {input.argfile})"
+        script_args = lambda wildcards, input, output: f"--bbv={output.bbv_txt} --bbvinfo={output.bbvinfo_txt} --warmup={warmup} --interval={interval} --waypoints={input.waypoints_txt}"
 
 rule intervals:
     input:
