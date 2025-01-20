@@ -221,24 +221,19 @@ rule simpoints_json:
 
 checkpoint checkpoint:
     input:
+        **rules._pincpu.input,
         simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
         waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
-        gem5 = gem5_pin_exe,
-        checkpoint_py = gem5_pin_configs + "/pin-cpt.py",
-        exe = "{bench}/bin/{bin}/exe",
-        argfile = "{bench}/inputs/{input}",
+        script = gem5_pin_configs + "/pin-cpt.py",
     output:
-        directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt")
+        **rules._pincpu.output,
+        cptdir = directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt"),
     params:
-        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
-        rundir = "{bench}/bin/{bin}/run",
+        **rules._pincpu.params,
+        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
+        script_args = lambda wildcards, input: f"--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt}"
     shell:
-        "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && " \
-        "{input.gem5} -re --silent-redirect -d {params.outdir} " \
-        "{input.checkpoint_py} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt " \
-        "--mem-size=512MiB --max-stack-size=8MiB --chdir={params.rundir} " \
-        "--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt} " \
-        "-- {input.exe} $(cat {input.argfile})"
+        rules._pincpu.rule.shellcmd
 
 def get_checkpoint(wildcards):
     checkpoint_output = checkpoints.checkpoint.get(**wildcards)
