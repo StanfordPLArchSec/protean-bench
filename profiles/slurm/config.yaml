@@ -1,4 +1,8 @@
 jobs: 192 # 64*3 -- cafe1, cafe2, cafe3
+executor: slurm
+use-apptainer: true
+apptainer-args: "--home $PWD/.."
+latency-wait: 10
 default-resources:
     slurm_partition: "cafe"
     slurm_account: "cafe"
