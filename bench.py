@@ -8,7 +8,7 @@ def time_to_minutes(s):
     return math.ceil(h * 60 + m + s / 60)
 
 class Input:
-    def __init__(self, name: str, args: str, stdin: str, mem_size: str, stack_size: str, deps: list, runtime: str):
+    def __init__(self, name: str, args: str, stdin: str, mem_size: str, stack_size: str, deps: list, runtime: str, host_mem: str):
         self.name = name
         self.args = args
         self.mem_size = mem_size
@@ -16,9 +16,11 @@ class Input:
         self.stdin = stdin
         self.deps = deps
         self.runtime = runtime
+        self.host_mem = host_mem
 
+    # TODO: Rename to reflect host.
     def mem_plus(self, s: str) -> str:
-        a = humanfriendly.parse_size(self.mem_size)
+        a = humanfriendly.parse_size(self.host_mem)
         b = humanfriendly.parse_size(s)
         return humanfriendly.format_size(a + b)
 
@@ -31,7 +33,10 @@ class Benchmark:
         self.name = name
         self.inputs = []
 
-    def add_input(self, args: str = "", stdin: str = "/dev/null", mem_size: str = "512MiB", stack_size: str = "8MiB", deps = [], runtime = "01:00:00"):
+    def add_input(self, args: str = "", stdin: str = "/dev/null", mem_size: str = "512MiB", stack_size: str = "8MiB", deps = [], runtime = "01:00:00",
+                  host_mem = None):
+        if not host_mem:
+            host_mem = mem_size
         self.inputs.append(Input(
             name = str(len(self.inputs)),
             args = args,
@@ -40,6 +45,7 @@ class Benchmark:
             stack_size = stack_size,
             deps = deps,
             runtime = runtime,
+            host_mem = host_mem,
         ))
         return self
 
