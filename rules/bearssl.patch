@@ -1,0 +1,13 @@
+diff --git a/test/test_speed.c b/test/test_speed.c
+index eb1b964..2187ca0 100644
+--- a/test/test_speed.c
++++ b/test/test_speed.c
+@@ -206,7 +206,7 @@ test_speed_ ## fname(void) \
+ 		} \
+ 		end = clock(); \
+ 		tt = (double)(end - begin) / CLOCKS_PER_SEC; \
+-		if (tt >= 2.0) { \
++        if (num >= 163840) { \
+ 			printf("%-30s %8.2f MB/s\n", #Name, \
+ 				((double)sizeof buf) * (double)num \
+ 				/ (tt * 1000000.0)); \
