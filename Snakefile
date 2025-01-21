@@ -94,7 +94,9 @@ rule _pincpu:
         mem = lambda wildcards: get_input(wildcards).mem_size,
         stack = lambda wildcards: get_input(wildcards).stack_size,
     resources:
-        mem = lambda wildcards: get_input(wildcards).mem_plus("2GiB"), # Grant extra memory for gem5.
+        # TODO: Intelligent dynamic memory: use /usr/bin/time -vo {outdir}/time.txt to get max memory usage.
+        # Then, when dynamically computing mem, check whether such a file from a previous run exists and grab the memory limit from there.
+        mem = lambda wildcards: get_input(wildcards).mem_plus("8GiB"), # Grant extra memory for gem5. 631.deepsjeng_s needs at least +8GiB extra memory. Can't do more than this, because then it'll be the bottleneck.
         runtime = lambda wildcards: get_input(wildcards).runtime_seconds(),
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
@@ -235,6 +237,8 @@ checkpoint checkpoint:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
         script_args = lambda wildcards, input: f"--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt}"
+    resources:
+        **rules._pincpu.rule.resources
     shell:
         rules._pincpu.rule.shellcmd
 
