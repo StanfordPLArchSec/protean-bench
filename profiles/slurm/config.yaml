@@ -1,0 +1,4 @@
+jobs: 192 # 64*3 -- cafe1, cafe2, cafe3
+default-resources:
+    slurm_partition: "cafe"
+    slurm_account: "cafe"
