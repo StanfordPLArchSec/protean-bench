@@ -32,16 +32,16 @@ class Benchmark:
 
 def get_cpu2017_int() -> list:
     perlbench = make_bench("600.perlbench_s")
-    perlbench.add_input("-I./lib checkspam.pl 2500 5 25 11 150 1 1 1 1")
+    perlbench.add_input("-I./lib checkspam.pl 2500 5 25 11 150 1 1 1 1", runtime = "02:00:00")
     perlbench.add_input("-I./lib diffmail.pl 4 800 10 17 19 300")
     perlbench.add_input("-I./lib splitmail.pl 6400 12 26 16 100 0")
 
     gcc = make_bench("602.gcc_s")
-    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB")
+    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB", runtime = "02:00:00")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=1000 -fselective-scheduling -fselective-scheduling2 -o gcc-pp.opts-O5_-finline-limit_1000_-fselective-scheduling_-fselective-scheduling2.s", mem_size = "4GiB")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=24000 -fgcse -fgcse-las -fgcse-lm -fgcse-sm -o gcc-pp.opts-O5_-finline-limit_24000_-fgcse_-fgcse-las_-fgcse-lm_-fgcse-sm.s", mem_size = "4GiB")
 
-    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB")
+    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB", runtime = "02:00:00")
 
     omnetpp = make_bench("620.omnetpp_s").add_input("-c General -r 0")
 
@@ -52,14 +52,14 @@ def get_cpu2017_int() -> list:
     x264.add_input("--pass 2 --stats x264_stats.log --bitrate 1000 --dumpyuv 200 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[0]])
     x264.add_input("--seek 500 --dumpyuv 200 --frames 1250 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[1]])
     
-    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB")
+    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "16GiB")
 
     leela = make_bench("641.leela_s").add_input("ref.sgf")
 
     exchange2 = make_bench("648.exchange2_s").add_input("6")
 
     xz = make_bench("657.xz_s")
-    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB")
+    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "02:00:00")
     xz.add_input("cld.tar.xz 1400 19cf30ae51eddcbefda78dd06014b4b96281456e078ca7c13e1c0c9e6aaea8dff3efb4ad6b0456697718cede6bd5454852652806a657bb56e07d61128434b474 536995164 539938872 8", mem_size = "8GiB")
 
 get_cpu2017_int()
