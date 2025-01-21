@@ -6,8 +6,8 @@ rule clone_bearssl:
     input:
         clang = "compilers/{bin}/llvm/bin/clang",
         cflags = "compilers/{bin}/cflags", # TODO: This should be in a config file.
-        patch = "bearssl.patch",
-        conf = "bearssl.mk",
+        patch = "rules/bearssl.patch",
+        conf = "rules/bearssl.mk",
         libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     output:
         git_repo = directory("bearssl/bin/{bin}/git"),
