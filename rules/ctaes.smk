@@ -16,12 +16,11 @@ rule build_ctaes:
         # TODO: Inherit from common rule?
         clang = "compilers/{bin}/llvm/bin/clang",
         cflags = "compilers/{bin}/cflags", # TODO: This should be in a config file.
+        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
         git_repo = "ctaes/bin/{bin}/git",
     output:
         exe = "ctaes/bin/{bin}/exe",
         run = directory("ctaes/bin/{bin}/run"),
-    params:
-        ldflags = "-static"
     shell:
-        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} $(cat {input.cflags}) {params.ldflags} && "
+        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} $(cat {input.cflags}) -static -L$(dirname {input.libc}) -lllvmlibc -fuse-ld=lld && "
         "ln -sf . {output.run} "

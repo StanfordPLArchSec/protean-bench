@@ -14,6 +14,7 @@ rule build_djbsort:
     input:
         clang = "compilers/{bin}/llvm/bin/clang",
         cflags = "compilers/{bin}/cflags", # TODO: This should be in a config file.        
+        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
         src = "djbsort/bin/{bin}/src"
     output:
         exe = "djbsort/bin/{bin}/exe",
@@ -21,7 +22,7 @@ rule build_djbsort:
     params:
         ldflags = "-static"
     shell:
-        "echo $(realpath {input.clang}) $(cat {input.cflags}) {params.ldflags} > {input.src}/compilers/c && "
+        "echo $(realpath {input.clang}) $(cat {input.cflags}) -static -L$(realpath $(dirname {input.libc})) -lllvmlibc -fuse-ld=lld > {input.src}/compilers/c && "
         "(cd {input.src} && ./build && ./test && ./upgrade) && "
         "ln -sf src/link-install/command/int32-speed {output.exe} && "
         "ln -sf . {output.run}"
