@@ -20,6 +20,11 @@ bingroups = {
     "main": ["base", "nst"],
 }
 
+sim_gem5_opts = {
+    "tpt": [ "--debug-flag=TPT"],
+    "spt-ptex": ["--debug-flag=PTeX"],
+}
+
 warmup = 10000000
 interval = 50000000
 simpoint_exe = "../simpoint/bin/simpoint"
@@ -227,12 +232,13 @@ rule resume_from_checkpoint:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+        gem5_opts = lambda wildcards: " ".join(sim_gem5_opts.get(wildcards.sim, []))
     resources:
         mem = rules._pincpu.rule.resources["mem"], # TOOD: Shouldn't inherit directly from PinCPU.
         # TODO: Specify runtime?
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
-        "{input.gem5} -re --silent-redirect -d {params.outdir} "
+        "{input.gem5} -re --silent-redirect -d {params.outdir} --debug-file=dbgout.txt.gz {params.gem5_opts} "
         "{input.run_script} --input=/dev/null --output=stdout.txt --errout=stderr.txt "
         "--cpu-type=X86O3CPU "
         "--mem-size={params.mem} --max-stack-size={params.stack} --chdir={params.rundir} "
