@@ -21,7 +21,7 @@ bingroups = {
 }
 
 sim_gem5_opts = {
-    "tpt": [ "--debug-flag=TPT"],
+    "tpt": [ "--debug-flag=TPT,TransmitterStalls"],
     "spt-ptex": ["--debug-flag=PTeX"],
 }
 
