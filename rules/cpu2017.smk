@@ -5,7 +5,7 @@ from bench import make_bench
 cpu2017_src = "../cpu2017"
 test_suite_src = "../test-suite"
 
-def get_cpu2017_int() -> list:
+def get_cpu2017_int():
     perlbench = make_bench("600.perlbench_s")
     perlbench.add_input("-I./lib checkspam.pl 2500 5 25 11 150 1 1 1 1", runtime = "02:00:00")
     perlbench.add_input("-I./lib diffmail.pl 4 800 10 17 19 300")
@@ -37,7 +37,37 @@ def get_cpu2017_int() -> list:
     xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "02:00:00")
     xz.add_input("cld.tar.xz 1400 19cf30ae51eddcbefda78dd06014b4b96281456e078ca7c13e1c0c9e6aaea8dff3efb4ad6b0456697718cede6bd5454852652806a657bb56e07d61128434b474 536995164 539938872 8", mem_size = "8GiB")
 
+
+def get_cpu2017_fp():
+    bwaves = make_bench("603.bwaves_s")
+    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB") \
+          .add_input(stdin = "bwaves_2.in", mem_size = "16GiB", stack_size = "16GiB")
+
+    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "8GiB")
+
+    lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB")
+
+    wrf = make_bench("621.wrf_s").add_input(stack_size = "128MiB")
+
+    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB")
+
+    pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB")
+
+    imagick = make_bench("638.imagick_s").add_input(
+        "-limit disk 0 refspeed_input.tga -resize 817% -rotate -2.76 -shave 540x375 -alpha remove -auto-level " \
+        "-contrast-stretch 1x1% -colorspace Lab -channel R -equalize +channel -colorspace sRGB -define histogram:unique-colors=false " \
+        "-adaptive-blur 0x5 -despeckle -auto-gamma -adaptive-sharpen 55 -enhance -brightness-contrast 10x10 -resize 30% refspeed_output.tga",
+        mem_size = "8GiB",
+    )
+
+    nab = make_bench("644.nab_s").add_input("3j1n 20140317 220", mem_size = "1GiB")
+
+    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB")
+
+    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB")
+    
 get_cpu2017_int()
+get_cpu2017_fp()
 
 rule build_spec_cpu2017:
     input:
