@@ -38,7 +38,7 @@ class Benchmark:
         if not host_mem:
             host_mem = mem_size
         self.inputs.append(Input(
-            name = name,
+            name = str(len(self.inputs)),
             args = args,
             stdin = stdin,
             mem_size = mem_size,
