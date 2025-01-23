@@ -5,6 +5,7 @@ import math
 
 lines = sys.stdin.readlines()
 # FIXME: Detect this programmatically.
+print(lines[0].strip())
 lines = lines[1:]
 
 n = len(lines[0].split()) - 1

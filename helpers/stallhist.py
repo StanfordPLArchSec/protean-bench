@@ -6,14 +6,14 @@ import collections
 hist = collections.defaultdict(int)
 
 def handle_line(line):
-    tokens = line.strip().split()[2:]
-    if tokens[0] != 'stall':
+    tokens = line.strip().split()
+    if tokens[0] != 'STALL:':
         return
     pc = tokens[1]
     n = int(tokens[2])
     hist[pc] += n
 
-# 5028000: system.switch_cpus.commit: stall 0xb492f0 174500 ::   MOV_R_M : ld   rax, DS:[r13 + 0x18]
+# STALL: 0x6eafb0 500 ::   MOVQ_XMM_M : ldfp   %xmm1_low, DS:[rdi]
 for line in sys.stdin:
     handle_line(line)
 
