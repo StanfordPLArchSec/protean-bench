@@ -68,13 +68,8 @@ xsimpoint_cmd.extend([
 ])
 
 exit_code = os.system(" ".join(xsimpoint_cmd))
-print("TODO", file=sys.stderr)
-exit(exit_code)
-    
-# xsimpoint_cmd.append(f"--outdir"
-    
-# ./crossbin-simpoint.py
-# --bin name=base,cwd=../bench-ninja/sw/base/test-suite/External/SPEC/CINT2017speed/625.x264_s/run_ref
-# --bin name=nst,cwd=../bench-ninja/sw/ptex-nst/test-suite/External/SPEC/CINT2017speed/625.x264_s/run_ref
-# --outdir out --gem5-exe ../gem5/pincpu/build/X86/gem5.opt --gem5-configs ../gem5/pincpu/configs --simpoint ../simpoint/bin/simpoint --
-# ../625.x264_s --pass 1 --stats x264_stats.log --bitrate 1000 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720
+if exit_code != 0:
+    exit(exit_code)
+
+
+# Now, run the experiment.
