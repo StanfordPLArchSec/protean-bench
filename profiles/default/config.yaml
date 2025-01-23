@@ -1,3 +1,9 @@
 default-resources:
     slurm_partition: "cafe"
     slurm_account: "cafe"
+jobs: 192
+executor: slurm
+use-apptainer: true
+apptainer-args: "--home $PWD/.."
+# latency-wait: 10
+rerun-incomplete: true
