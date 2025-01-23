@@ -103,6 +103,7 @@ rule build_spec_cpu2017:
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
         "-Wno-dev --log-level=ERROR "
+        "-DTEST_SUITE_COLLECT_COMPILE_TIME=0 "
         "&& cmake --build {params.test_suite_build} --target timeit-target "
         "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
         "&& BENCH_DIR=$(find {params.test_suite_build} -name {wildcards.bench} -type d) "
