@@ -27,7 +27,7 @@ def get_cpu2017_int() -> list:
     x264.add_input("--pass 2 --stats x264_stats.log --bitrate 1000 --dumpyuv 200 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[0]])
     x264.add_input("--seek 500 --dumpyuv 200 --frames 1250 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[1]])
     
-    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "16GiB")
+    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "20GiB")
 
     leela = make_bench("641.leela_s").add_input("ref.sgf")
 
