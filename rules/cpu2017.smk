@@ -83,6 +83,7 @@ def compile_mem(wildcards):
     d = {
         "602.gcc_s": "4GiB",
         "621.wrf_s": "8GiB",
+        "628.pop2_s": "2GiB",
     }
     return d.get(wildcards.bench, "1GiB")
 
