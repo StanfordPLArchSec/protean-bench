@@ -82,6 +82,7 @@ get_cpu2017_fp()
 def compile_mem(wildcards):
     d = {
         "602.gcc_s": "4GiB",
+        "607.cactuBSSN_s": "2GiB",
         "621.wrf_s": "8GiB",
         "628.pop2_s": "2GiB",
     }
