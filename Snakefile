@@ -17,7 +17,7 @@ addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
 # TODO: Define these in the filesystem, too.
 bingroups = {
-    "main": ["base", "nst"],
+    "main": ["base", "sni.", "sni.p", "sni.pb", "sni.pbs"],
 }
 
 sim_gem5_opts = {
@@ -66,8 +66,9 @@ rule _pincpu:
     resources:
         # TODO: Intelligent dynamic memory: use /usr/bin/time -vo {outdir}/time.txt to get max memory usage.
         # Then, when dynamically computing mem, check whether such a file from a previous run exists and grab the memory limit from there.
-        mem = lambda wildcards: get_input(wildcards).mem_plus("8GiB"), # Grant extra memory for gem5. 631.deepsjeng_s needs at least +8GiB extra memory. Can't do more than this, because then it'll be the bottleneck.
+        mem = lambda wildcards: get_input(wildcards).mem_plus("2GiB"), # Grant extra memory for gem5. A resonable value will meet needs for most benchmarks, but not all. For those that need more, override the `host_mem` parameter when creating the benchmark input.
         runtime = lambda wildcards: get_input(wildcards).runtime_seconds(),
+    threads: 1
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
@@ -90,7 +91,7 @@ use rule _pincpu as bbhist with:
 
 rule instlist:
     input:
-        bbhist_txt = "{dir,.*}/bbhist.txt",
+        bbhist_txt = "{dir}/bbhist.txt",
         instlist_py = "helpers/instlist.py",
     output:
         instlist_txt = "{dir,.*}/instlist.txt",
@@ -108,7 +109,7 @@ rule srclist:
 
 rule srclocs:
     input:
-        srclist_txt = "{dir,.*}/srclist.txt",
+        srclist_txt = "{dir}/srclist.txt",
         srclocs_py = "helpers/srclocs.py",
     output:
         srclocs = "{dir,.*}/srclocs.txt"
@@ -117,8 +118,8 @@ rule srclocs:
 
 rule lehist:
     input:
-        bbhist_txt = "{dir,.*}/bbhist.txt",
-        srclocs_txt = "{dir,.*}/srclocs.txt",
+        bbhist_txt = "{dir}/bbhist.txt",
+        srclocs_txt = "{dir}/srclocs.txt",
         lehist_py = "helpers/lehist.py",
     output:
         lehist_txt = "{dir,.*}/lehist.txt"
@@ -161,7 +162,7 @@ use rule _pincpu as bbv with:
 
 rule intervals:
     input:
-        bbv_txt = "{dir,.*}/bbv.txt",
+        bbv_txt = "{dir}/bbv.txt",
         simpoint_exe = simpoint_exe,
     output:
         intervals_txt = "{dir,.*}/intervals.txt",
@@ -207,6 +208,7 @@ checkpoint checkpoint:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
         script_args = lambda wildcards, input: f"--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt}"
+    threads: 1
     resources:
         **rules._pincpu.rule.resources
     shell:
@@ -233,6 +235,7 @@ rule resume_from_checkpoint:
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
         gem5_opts = lambda wildcards: " ".join(sim_gem5_opts.get(wildcards.sim, []))
+    threads: 1
     resources:
         mem = rules._pincpu.rule.resources["mem"], # TOOD: Shouldn't inherit directly from PinCPU.
         # TODO: Specify runtime?
