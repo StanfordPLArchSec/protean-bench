@@ -229,7 +229,8 @@ rule resume_from_checkpoint:
         run_script = "../gem5/{sim}/configs/AlderLake/se.py",
         hwconfig = "hwconfs/{hwconf}",
     output:
-        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt"
+        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt",
+        dbgout_txt_gz = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/dbgout.txt.gz",
     params:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
@@ -262,7 +263,7 @@ rule checkpoint_results:
     shell:
         "{input.script} --stats={input.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
 
-def get_checkpoint_results_list(wildcards):
+def get_simpoints_json(wildcards):
     # Make sure we've executed the checkpoint.
     # This should ensure that simpoints.json is available, right?
     checkpoints.checkpoint.get(**wildcards) 
@@ -270,19 +271,31 @@ def get_checkpoint_results_list(wildcards):
     assert len(simpoints_json) == 1
     simpoints_json = simpoints_json[0]
     with open(simpoints_json) as f:
-        j = json.load(f)
-    assert type(j) is list
+        return json.load(f)
+
+def get_simpoint_weight(wildcards):
+    simpoints = get_simpoints_json(wildcards)
+    i = int(wildcards.cptid)
+    return simpoints[i]["weight"]
+    
+def get_exp_checkpoints(wildcards, *path_components):
+    j = get_simpoints_json(wildcards)
     n = len(j)
-    return expand("{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/results.json",
-                  **wildcards, cptid = map(str, range(0, n)))
+    paths = expand("{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+                   **wildcards, cptid = map(str, range(0, n)))
+    return [os.path.join(path, *path_components) for path in paths]
+
+# TODO: Remove if unused.
+def get_exp_weights(wildcards):
+    return list(map(lambda simpoint: simpoint["weight"], get_simpoints_json(wildcards)))
 
 rule bench_results:
     input:
         script = "helpers/generate-bench-results.py",
-        cpt_results = get_checkpoint_results_list,
+        cpt_results = lambda wildcards: get_exp_checkpoints(wildcards, "results.json"),
     output:
         "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/results.json"
     shell:
         "{input.script} {input.cpt_results} --output={output}"
 
-
+include: "rules/stalls.smk"
