@@ -1,11 +1,17 @@
 # Rules for building the SPEC benchmarks.
 
-from bench import make_bench
+import bench
 
 cpu2017_src = "../cpu2017"
 test_suite_src = "../test-suite"
 
+types = dict()
+
 def get_cpu2017_int():
+    def make_bench(name):
+        types[name] = "INT"
+        return bench.make_bench(name)
+
     perlbench = make_bench("600.perlbench_s")
     perlbench.add_input("-I./lib checkspam.pl 2500 5 25 11 150 1 1 1 1", runtime = "02:00:00")
     perlbench.add_input("-I./lib diffmail.pl 4 800 10 17 19 300")
@@ -39,6 +45,10 @@ def get_cpu2017_int():
 
 
 def get_cpu2017_fp():
+    def make_bench(name):
+        types[name] = "FP"
+        return bench.make_bench(name)
+
     bwaves = make_bench("603.bwaves_s")
     bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB") \
           .add_input(stdin = "bwaves_2.in", mem_size = "16GiB", stack_size = "16GiB")
@@ -69,6 +79,13 @@ def get_cpu2017_fp():
 get_cpu2017_int()
 get_cpu2017_fp()
 
+def compile_mem(wildcards):
+    d = {
+        "602.gcc_s": "4GiB",
+        "621.wrf_s": "8GiB",
+    }
+    return d.get(wildcards.bench, "1GiB")
+
 rule build_spec_cpu2017:
     input:
         clang = "compilers/{bin}/llvm/bin/clang",
@@ -88,17 +105,19 @@ rule build_spec_cpu2017:
         test_suite_src = test_suite_src,
         test_suite_build = "{bench}/bin/{bin}/test-suite",
         cflags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
+        conlyflags = "-Wno-implicit-int",
         ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/llvm/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+        type = lambda wildcards: types[wildcards.bench],
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     threads: 8
     resources:
-        mem = "4GiB" # Only 602.gcc_s appears to need this, so far.
+        mem = compile_mem
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} -DCMAKE_Fortran_COMPILER=$PWD/{input.flang} "
-        "-DCMAKE_C_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
+        "-DCMAKE_C_FLAGS=\"{params.cflags} {params.conlyflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
         "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
@@ -106,7 +125,6 @@ rule build_spec_cpu2017:
         "-DTEST_SUITE_COLLECT_COMPILE_TIME=0 "
         "&& cmake --build {params.test_suite_build} --target timeit-target "
         "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
-        "&& BENCH_DIR=$(find {params.test_suite_build} -name {wildcards.bench} -type d) "
-        "&& BENCH_DIR=$(realpath $BENCH_DIR) "
+        "&& BENCH_DIR=$(realpath {params.test_suite_build}/External/SPEC/C{params.type}2017speed/{wildcards.bench}) "
         "&& ln -sf $BENCH_DIR/{wildcards.bench} {output.exe} "
         "&& ln -sf $BENCH_DIR/run_ref {output.run} "
