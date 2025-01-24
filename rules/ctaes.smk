@@ -7,7 +7,7 @@ rule clone_ctaes:
     output:
         git_repo = directory("ctaes/bin/{bin}/git")
     params:
-        git_url = "https://github.com/nmosier/ctaes"
+        git_url = "https://github.com/bitcoin-core/ctaes"
     shell:
         "git clone {params.git_url} {output.git_repo}"
 
