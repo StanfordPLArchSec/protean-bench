@@ -88,9 +88,9 @@ def compile_mem(wildcards):
 
 rule build_spec_cpu2017:
     input:
-        clang = "compilers/{bin}/llvm/bin/clang",
-        clangxx = "compilers/{bin}/llvm/bin/clang++",
-        flang = "compilers/{bin}/llvm/bin/flang-new",
+        clang = "compilers/{bin}/build/bin/clang",
+        clangxx = "compilers/{bin}/build/bin/clang++",
+        flang = "compilers/{bin}/build/bin/flang-new",
         cflags = "compilers/{bin}/cflags",
         fflags = "compilers/{bin}/fflags",
         libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
@@ -106,7 +106,7 @@ rule build_spec_cpu2017:
         test_suite_build = "{bench}/bin/{bin}/test-suite",
         cflags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
         conlyflags = "-Wno-implicit-int",
-        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/llvm/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/build/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
         type = lambda wildcards: types[wildcards.bench],
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
