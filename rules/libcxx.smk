@@ -1,7 +1,7 @@
 rule build_libcxx:
     input:
-        directory("llvm/{bin}/libcxx"),
-        directory("llvm/{bin}/libcxxabi"),
+        "llvm/{bin}/libcxx",
+        "llvm/{bin}/libcxxabi",
         clang = "compilers/{bin}/llvm/bin/clang",
         clangxx = "compilers/{bin}/llvm/bin/clang++",
         cflags = "compilers/{bin}/cflags",

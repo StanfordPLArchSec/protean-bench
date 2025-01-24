@@ -3,7 +3,7 @@ rule build_libc:
         clang = "compilers/{bin}/llvm/bin/clang",
         clangxx = "compilers/{bin}/llvm/bin/clang++",
         cflags = "compilers/{bin}/cflags",
-        llvm_libc_src = directory("llvm/{bin}/libc"),
+        llvm_libc_src = "llvm/{bin}/libc",
     output:
         build = directory("libraries/{bin}/libc"),
         lib = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
