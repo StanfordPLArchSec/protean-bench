@@ -1,0 +1,256 @@
+Only in cpu2017/benchspec/CPU/628.pop2_s/src: .git
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/cfc11_mod.F90 cpu2017/benchspec/CPU/628.pop2_s/src/cfc11_mod.F90
+301,302c301
+<        mmessage = 'ERROR : stopping in '/&
+<                                          &/ subname
+---
+>        mmessage = 'ERROR : stopping in '// subname
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/diagnostics.F90 cpu2017/benchspec/CPU/628.pop2_s/src/diagnostics.F90
+456,458c456
+<      diag_velocity_outfile  = trim(string)/&
+<                                            &/'.'/&
+<                                            &/trim(ccsm_diag_date)
+---
+>      diag_velocity_outfile  = trim(string)//'.'//trim(ccsm_diag_date)
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/ecosys_mod.F90 cpu2017/benchspec/CPU/628.pop2_s/src/ecosys_mod.F90
+5194a5195,5196
+>    character(100), dimension(1) :: local_var
+>          
+5621a5624,5625
+>          local_var = (/trim(ndep_shr_stream_file)/)
+> 
+5637c5641
+<                                  FileName=(/trim(ndep_shr_stream_file)/),      &
+---
+>                                  FileName=local_var,      &
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/io_binary.F90 cpu2017/benchspec/CPU/628.pop2_s/src/io_binary.F90
+172,173c172
+<       path = trim(data_file%full_name)/&
+<              &/'.hdr'
+---
+>       path = trim(data_file%full_name)//'.hdr'
+385,386c384
+<       path = trim(data_file%full_name)/&
+<                                        &/'.hdr'
+---
+>       path = trim(data_file%full_name)//'.hdr'
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/io_netcdf.F90 cpu2017/benchspec/CPU/628.pop2_s/src/io_netcdf.F90
+427,428c427
+<       work_line = 'LOG_'/&
+<                          &/data_file%add_attrib_lname(n)
+---
+>       work_line = 'LOG_'//data_file%add_attrib_lname(n)
+1075,1076c1074
+<          work_line = 'LOG_'/&
+<                             &/trim(io_field%add_attrib_lname(n))
+---
+>          work_line = 'LOG_'//trim(io_field%add_attrib_lname(n))
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/ms_balance.F90 cpu2017/benchspec/CPU/628.pop2_s/src/ms_balance.F90
+668,672c668
+<       write(stdout,*) cyear/&
+<                             &/  '/'  /&
+<                                       &/cmonth/&
+<                                                &/  '/' /&
+<                                                         &/cday
+---
+>       write(stdout,*) cyear//  '/'  //cmonth//  '/' //cday
+697,699c693
+<            write(stdout,1102) month3_all(imonth) /&
+<                                                   &/ ' ' /&
+<                                                           &/ &
+---
+>            write(stdout,1102) month3_all(imonth) // ' ' // &
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/passive_tracers.F90 cpu2017/benchspec/CPU/628.pop2_s/src/passive_tracers.F90
+411,417c411,413
+<       sname = trim(tracer_d(n)%short_name) /&
+<                                             &/ '_SQR'
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Squared'
+<       units = '(' /&
+<                    &/ tracer_d(n)%units /&
+<                                          &/ ')^2'
+---
+>       sname = trim(tracer_d(n)%short_name) // '_SQR'
+>       lname = trim(tracer_d(n)%long_name) // ' Squared'
+>       units = '(' // tracer_d(n)%units // ')^2'
+424,427c420,421
+<       sname = trim(tracer_d(n)%short_name) /&
+<                                             &/ '_SURF'
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Surface Value'
+---
+>       sname = trim(tracer_d(n)%short_name) // '_SURF'
+>       lname = trim(tracer_d(n)%long_name) // ' Surface Value'
+435,440c429,431
+<       sname = trim(tracer_d(n)%short_name) /&
+<                                             &/ '_zint_100m'
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' 0-100m Vertical Integral'
+<       units = trim(tracer_d(n)%units) /&
+<                                        &/ ' cm'
+---
+>       sname = trim(tracer_d(n)%short_name) // '_zint_100m'
+>       lname = trim(tracer_d(n)%long_name) // ' 0-100m Vertical Integral'
+>       units = trim(tracer_d(n)%units) // ' cm'
+447,450c438,439
+<       sname = 'J_' /&
+<                     &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Source Sink Term'
+---
+>       sname = 'J_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Source Sink Term'
+458,461c447,448
+<       sname = 'Jint_' /&
+<                        &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Source Sink Term Vertical Integral'
+---
+>       sname = 'Jint_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Source Sink Term Vertical Integral'
+469,472c456,457
+<       sname = 'Jint_100m_' /&
+<                             &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Source Sink Term Vertical Integral, 0-100m'
+---
+>       sname = 'Jint_100m_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Source Sink Term Vertical Integral, 0-100m'
+480,483c465,466
+<       sname = 'tend_zint_100m_' /&
+<                             &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Tendency Vertical Integral, 0-100m'
+---
+>       sname = 'tend_zint_100m_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Tendency Vertical Integral, 0-100m'
+491,494c474,475
+<       sname = 'STF_' /&
+<                       &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Surface Flux'
+---
+>       sname = 'STF_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Surface Flux'
+502,505c483,484
+<       sname = 'RESID_' /&
+<                         &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Residual Surface Flux'
+---
+>       sname = 'RESID_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Residual Surface Flux'
+513,516c492,493
+<       sname = 'FvPER_' /&
+<                         &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Virtual Surface Flux, PER'
+---
+>       sname = 'FvPER_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Virtual Surface Flux, PER'
+524,527c501,502
+<       sname = 'FvICE_' /&
+<                         &/ trim(tracer_d(n)%short_name)
+<       lname = trim(tracer_d(n)%long_name) /&
+<                                            &/ ' Virtual Surface Flux, ICE'
+---
+>       sname = 'FvICE_' // trim(tracer_d(n)%short_name)
+>       lname = trim(tracer_d(n)%long_name) // ' Virtual Surface Flux, ICE'
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/restart.F90 cpu2017/benchspec/CPU/628.pop2_s/src/restart.F90
+676,677c676
+<       short_name = trim(tracer_d(n)%short_name)/&
+<                                                 &/'_CUR'
+---
+>       short_name = trim(tracer_d(n)%short_name)//'_CUR'
+679,680c678
+<       long_name = trim(tracer_d(n)%long_name)/&
+<                                               &/' at current time'
+---
+>       long_name = trim(tracer_d(n)%long_name)//' at current time'
+696,697c694
+<       short_name = trim(tracer_d(n)%short_name)/&
+<                                                 &/'_OLD'
+---
+>       short_name = trim(tracer_d(n)%short_name)//'_OLD'
+699,700c696
+<       long_name = trim(tracer_d(n)%long_name)/&
+<                                               &/' at old time'
+---
+>       long_name = trim(tracer_d(n)%long_name)//' at old time'
+1816,1817c1812
+<       file_suffix = trim(runid)/&
+<                                 &/'.end'
+---
+>       file_suffix = trim(runid)//'.end'
+1819,1820c1814
+<       file_suffix = trim(runid)/&
+<                                 &/'.even'
+---
+>       file_suffix = trim(runid)//'.even'
+1822,1823c1816
+<       file_suffix = trim(runid)/&
+<                                 &/'.odd'
+---
+>       file_suffix = trim(runid)//'.odd'
+1853,1855c1846
+<          file_suffix = trim(runid)/&
+<                                    &/'.'/&
+<                                          &/trim(cdate)
+---
+>          file_suffix = trim(runid)//'.'//trim(cdate)
+1864,1868c1855
+<          file_suffix = trim(runid)/&
+<                                    &/'.'/&
+<                                    &/trim(cdate)/&
+<                                    &/'.h'/&
+<                                    &/trim(char_temp)
+---
+>          file_suffix = trim(runid)//'.'//trim(cdate)//'.h'//trim(char_temp)
+1877,1881c1864
+<          file_suffix = trim(runid)/&
+<                                    &/'.'/&
+<                                    &/trim(cdate)/&
+<                                    &/'.s'/&
+<                                    &/trim(char_temp)
+---
+>          file_suffix = trim(runid)//'.'//trim(cdate)//'.s'//trim(char_temp)
+1890,1892c1873
+<          file_suffix = trim(runid)/&
+<                                    &/'.'/&
+<                                          &/trim(char_temp)
+---
+>          file_suffix = trim(runid)//'.'//trim(char_temp)
+1968,1969c1949
+<       file_suffix = trim(runid)/&
+<                                 &/'.end'
+---
+>       file_suffix = trim(runid)//'.end'
+1971,1972c1951
+<       file_suffix = trim(runid)/&
+<                                 &/'.even'
+---
+>       file_suffix = trim(runid)//'.even'
+1974,1975c1953
+<       file_suffix = trim(runid)/&
+<                                 &/'.odd'
+---
+>       file_suffix = trim(runid)//'.odd'
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/tavg.F90 cpu2017/benchspec/CPU/628.pop2_s/src/tavg.F90
+4013,4015c4013
+<          file_suffix(cindx1:cindx2) = cyear_beg/&
+<                                                 &/'-'/&
+<                                                       &/cyear_end
+---
+>          file_suffix(cindx1:cindx2) = cyear_beg//'-'//cyear_end
+5733,5735c5731
+<              data_1d_ch(2)=trim(data_1d_ch(2)) /&
+<                                                  &/ ' + ' /&
+<                                                  &/trim(transport_region_info(nnn)%name)
+---
+>              data_1d_ch(2)=trim(data_1d_ch(2)) // ' + ' //trim(transport_region_info(nnn)%name)
+diff -r cpu2017-clean/benchspec/CPU/628.pop2_s/src/time_management.F90 cpu2017/benchspec/CPU/628.pop2_s/src/time_management.F90
+4722,4723c4722
+<          date_string = trim(beg_date)/&
+<                                       &/'-'
+---
+>          date_string = trim(beg_date)//'-'
