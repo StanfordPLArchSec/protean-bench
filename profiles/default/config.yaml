@@ -1,6 +1,7 @@
 default-resources:
     slurm_partition: "cafe"
     slurm_account: "cafe"
+    runtime: "1h"
 jobs: 192
 executor: slurm
 use-apptainer: true
