@@ -14,7 +14,7 @@ rule build_libc:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} "
-        "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
+        "-DCMAKE_C_FLAGS=\"$(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"$(cat {input.cflags})\" -DLLVM_ENABLE_PROJECTS=libc "
         "-Wno-dev --log-level=ERROR "
         "-DLLVM_ENABLE_LIBCXX=1 "
         "&& ninja --quiet -C {output.build} libc "
