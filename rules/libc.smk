@@ -1,20 +1,20 @@
 rule build_libc:
     input:
-        clang = "compilers/{bin}/llvm/bin/clang",
-        clangxx = "compilers/{bin}/llvm/bin/clang++",
+        clang = "compilers/{bin}/build/bin/clang",
+        clangxx = "compilers/{bin}/build/bin/clang++",
         cflags = "compilers/{bin}/cflags",
-        llvm_libc_src = "llvm/{bin}/libc",
+        llvm_libc_src = "compilers/{bin}/src/libc",
     output:
         build = directory("libraries/{bin}/libc"),
         lib = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     params:
-        llvm_src = "llvm/{bin}"
+        llvm_llvm_src = "compilers/{bin}/src/llvm"
     threads: 8
     shell:
         "rm -rf {output.build} && "
-        "cmake -S {params.llvm_src}/llvm -B {output.build} -DCMAKE_BUILD_TYPE=Release "
+        "cmake -S {params.llvm_llvm_src} -B {output.build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} "
-        "-DCMAKE_C_FLAGS='-O3 -g' -DCMAKE_CXX_FLAGS='-O3 -g' -DLLVM_ENABLE_PROJECTS=libc "
+        "-DCMAKE_C_FLAGS=\"$(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"$(cat {input.cflags})\" -DLLVM_ENABLE_PROJECTS=libc "
         "-Wno-dev --log-level=ERROR "
         "-DLLVM_ENABLE_LIBCXX=1 "
         "&& ninja --quiet -C {output.build} libc "
