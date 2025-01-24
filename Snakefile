@@ -17,7 +17,7 @@ addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
 # TODO: Define these in the filesystem, too.
 bingroups = {
-    "main": ["base", "sni.", "sni.p", "sni.pb", "sni.pbs"],
+    "main": ["base", "sni.", "sni.p", "sni.pb", "sni.pbc"],
 }
 
 sim_gem5_opts = {
