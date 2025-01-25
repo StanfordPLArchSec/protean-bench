@@ -1,0 +1,1 @@
+--ruby --enable-prefetch --tpt --implicit-channel=Lazy --tpt-reg --tpt-mem --tpt-xmit --tpt-mode=YRoT --speculation-model=AtRet --pcore
