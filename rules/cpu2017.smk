@@ -50,31 +50,32 @@ def get_cpu2017_fp():
         return bench.make_bench(name)
 
     bwaves = make_bench("603.bwaves_s")
-    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB") \
+    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB", runtime = "02:00:00") \
           .add_input(stdin = "bwaves_2.in", mem_size = "16GiB", stack_size = "16GiB")
 
-    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "8GiB")
+    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "8GiB", runtime = "02:00:00")
 
     lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB")
 
-    wrf = make_bench("621.wrf_s").add_input(stack_size = "128MiB")
+    wrf = make_bench("621.wrf_s").add_input(stack_size = "128MiB", runtime = "02:00:00")
 
-    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB")
+    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB", runtime = "02:00:00")
 
-    pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB")
+    pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB", runtime = "02:00:00")
 
     imagick = make_bench("638.imagick_s").add_input(
         "-limit disk 0 refspeed_input.tga -resize 817% -rotate -2.76 -shave 540x375 -alpha remove -auto-level " \
         "-contrast-stretch 1x1% -colorspace Lab -channel R -equalize +channel -colorspace sRGB -define histogram:unique-colors=false " \
         "-adaptive-blur 0x5 -despeckle -auto-gamma -adaptive-sharpen 55 -enhance -brightness-contrast 10x10 -resize 30% refspeed_output.tga",
         mem_size = "8GiB",
+        runtime = "02:00:00",
     )
 
-    nab = make_bench("644.nab_s").add_input("3j1n 20140317 220", mem_size = "1GiB")
+    nab = make_bench("644.nab_s").add_input("3j1n 20140317 220", mem_size = "1GiB", runtime = "02:00:00")
 
-    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB")
+    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "02:00:00")
 
-    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB")
+    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "02:00:00")
     
 get_cpu2017_int()
 get_cpu2017_fp()
