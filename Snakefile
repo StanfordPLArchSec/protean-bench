@@ -17,7 +17,7 @@ addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
 # TODO: Define these in the filesystem, too.
 bingroups = {
-    "main": ["base", "sni.", "sni.p", "sni.pb", "sni.pbc"],
+    "main": ["base", "sni.", "sni.c"],
 }
 
 sim_gem5_opts = {
@@ -128,6 +128,7 @@ rule lehist:
 
 rule shlocedges:
     input:
+        # FIXME: This is a bug!
         lehist_txts = lambda wildcards: expand("{bench}/cpt/{input}/{bingroup}/{bin}/lehist.txt", bench=wildcards.bench, input=wildcards.input, bingroup=wildcards.bingroup, bin=bingroups[wildcards.bingroup]),
         shlocedges_py = "helpers/shlocedges.py",
     output:
