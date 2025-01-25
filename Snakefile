@@ -35,6 +35,7 @@ include: "rules/cpu2017.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
 include: "rules/djbsort.smk"
+include: "rules/hwconf.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.

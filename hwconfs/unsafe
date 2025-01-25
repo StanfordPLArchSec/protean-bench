@@ -1,1 +1,1 @@
---ruby --enable-prefetch --ecore
+--ruby --enable-prefetch
