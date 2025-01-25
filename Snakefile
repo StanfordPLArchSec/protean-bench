@@ -63,6 +63,7 @@ rule _pincpu:
         workload_args = lambda wildcards: get_input(wildcards).args,
         mem = lambda wildcards: get_input(wildcards).mem_size,
         stack = lambda wildcards: get_input(wildcards).stack_size,
+        stdin = lambda wildcards: get_input(wildcards).stdin,
     resources:
         # TODO: Intelligent dynamic memory: use /usr/bin/time -vo {outdir}/time.txt to get max memory usage.
         # Then, when dynamically computing mem, check whether such a file from a previous run exists and grab the memory limit from there.
@@ -72,7 +73,7 @@ rule _pincpu:
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} "
-        "{input.script} --stdin=/dev/null --stdout=stdout.txt --stderr=stderr.txt "
+        "{input.script} --stdin={params.stdin} --stdout=stdout.txt --stderr=stderr.txt "
         "--mem-size={params.mem} --max-stack-size={params.stack} --chdir={params.rundir} "
         "{params.script_args} "
         "-- {input.exe} {params.workload_args} "
