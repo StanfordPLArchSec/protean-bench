@@ -15,11 +15,6 @@ addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
 # TODO: Investigate why partial build of libc doesn't work.
 
-# TODO: Define these in the filesystem, too.
-bingroups = {
-    "main": ["base", "sni.", "sni.c"],
-}
-
 sim_gem5_opts = {
     "tpt": [ "--debug-flag=TPT,TransmitterStalls"],
     "spt-ptex": ["--debug-flag=PTeX"],
@@ -33,6 +28,7 @@ num_simpoints = 10
 # TODO: Create a base rule from which to inherit that depend on the compiler like this.
 # TODO: Make builds quiet.
 
+include: "rules/compile.smk"
 include: "rules/libc.smk"
 include: "rules/libcxx.smk"
 include: "rules/cpu2017.smk"
@@ -45,6 +41,14 @@ include: "rules/djbsort.smk"
 
 def get_input(wildcards):
     return bench.get_bench(wildcards.bench).get_input(wildcards.input)
+
+def list_bingroup(name) -> List[str]:
+    bingroup = os.path.join("bingroups", name)
+    if not os.path.isfile(bingroup):
+        raise FileNotFoundError(f"bingroup '{bingroup}' does not exist!")
+    with open(bingroup) as f:
+        return f.read().strip().split()
+    
 
 # This abstract rule requires:
 # input:
@@ -130,7 +134,7 @@ rule lehist:
 rule shlocedges:
     input:
         # FIXME: This is a bug!
-        lehist_txts = lambda wildcards: expand("{bench}/cpt/{input}/{bingroup}/{bin}/lehist.txt", bench=wildcards.bench, input=wildcards.input, bingroup=wildcards.bingroup, bin=bingroups[wildcards.bingroup]),
+        lehist_txts = lambda wildcards: expand("{bench}/cpt/{input}/{bingroup}/{bin}/lehist.txt", bench=wildcards.bench, input=wildcards.input, bingroup=wildcards.bingroup, bin=list_bingroup(wildcards.bingroup)),
         shlocedges_py = "helpers/shlocedges.py",
     output:
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt"
@@ -183,7 +187,7 @@ def get_leader_file(filename, wildcards):
                   bench=wildcards.bench,
                   input=wildcards.input,
                   bingroup=wildcards.bingroup,
-                  bin=bingroups[wildcards.bingroup][0],
+                  bin=list_bingroup(wildcards.bingroup)[0],
                   filename=filename)
         
 rule simpoints_json:
