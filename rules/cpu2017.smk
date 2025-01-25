@@ -117,7 +117,7 @@ rule build_spec_cpu2017:
         mem = compile_mem
     shell:
         "rm -rf {params.test_suite_build} && "
-        "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=Release "
+        "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=RelWithDebInfo "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} -DCMAKE_Fortran_COMPILER=$PWD/{input.flang} "
         "-DCMAKE_C_FLAGS=\"{params.cflags} {params.conlyflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
         "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "

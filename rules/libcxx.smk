@@ -14,7 +14,7 @@ rule build_libcxx:
     threads: 8
     shell:
         "rm -rf {output.build} && "
-        "cmake -S {params.llvm_runtimes_src} -B {output.build} -DCMAKE_BUILD_TYPE=Release "
+        "cmake -S {params.llvm_runtimes_src} -B {output.build} -DCMAKE_BUILD_TYPE=RelWithDebInfo "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} "
         "-DCMAKE_C_FLAGS=\"$(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"$(cat {input.cflags})\" -DLLVM_ENABLE_RUNTIMES='libcxx;libcxxabi' "
         "-Wno-dev --log-level=ERROR "
