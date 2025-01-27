@@ -43,13 +43,11 @@ include: "rules/hwconf.smk"
 def get_input(wildcards):
     return bench.get_bench(wildcards.bench).get_input(wildcards.input)
 
-def list_bingroup(name) -> List[str]:
-    bingroup = os.path.join("bingroups", name)
-    if not os.path.isfile(bingroup):
-        raise FileNotFoundError(f"bingroup '{bingroup}' does not exist!")
-    with open(bingroup) as f:
-        return f.read().strip().split()
-    
+def list_bingroup(name):
+    from bingroups import bingroups
+    if name not in bingroups:
+        raise KeyError(f"bingroup '{bingroup}' does not exist!")
+    return bingroups[name]
 
 # This abstract rule requires:
 # input:
