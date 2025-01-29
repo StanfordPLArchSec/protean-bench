@@ -3,6 +3,7 @@ import sys
 import json
 
 import bench
+from compilers import get_compiler
 
 container: "ptex.sif"
 
@@ -234,8 +235,7 @@ rule resume_from_checkpoint:
         run_script = "../gem5/{sim}/configs/AlderLake/se.py",
         hwconfig = "hwconfs/{hwconf}",
     output:
-        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt",
-        dbgout_txt_gz = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/dbgout.txt.gz",
+        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stamp.txt",
     params:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
@@ -244,7 +244,7 @@ rule resume_from_checkpoint:
     threads: 1
     resources:
         mem = rules._pincpu.rule.resources["mem"], # TOOD: Shouldn't inherit directly from PinCPU.
-        # TODO: Specify runtime?
+        runtime = "3h", # TODO: Consider making this dynamic.
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} --debug-file=dbgout.txt.gz {params.gem5_opts} "
@@ -256,17 +256,20 @@ rule resume_from_checkpoint:
         "--restore-simpoint-checkpoint "
         "--cmd={input.exe} "
         "--options=\"{params.workload_args}\" "
-        "$(cat {input.hwconfig})" # TODO: Build this into a config file.
+        "$(cat {input.hwconfig}) && " # TODO: Build this into a config file.
+        "touch {output.stamp} "
 
 rule checkpoint_results:
     input:
         script = "helpers/generate-leaf-results.py",
-        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt",
+        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stamp.txt",
         simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
+    params:
+        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt"
     output:
         "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/results.json"
     shell:
-        "{input.script} --stats={input.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
+        "{input.script} --stats={params.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
 
 def get_simpoints_json(wildcards):
     # Make sure we've executed the checkpoint.
