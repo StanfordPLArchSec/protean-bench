@@ -18,11 +18,11 @@ def get_cpu2017_int():
     perlbench.add_input("-I./lib splitmail.pl 6400 12 26 16 100 0")
 
     gcc = make_bench("602.gcc_s")
-    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB", runtime = "02:00:00")
+    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB", runtime = "02:00:00", host_mem = "20GiB")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=1000 -fselective-scheduling -fselective-scheduling2 -o gcc-pp.opts-O5_-finline-limit_1000_-fselective-scheduling_-fselective-scheduling2.s", mem_size = "4GiB")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=24000 -fgcse -fgcse-las -fgcse-lm -fgcse-sm -o gcc-pp.opts-O5_-finline-limit_24000_-fgcse_-fgcse-las_-fgcse-lm_-fgcse-sm.s", mem_size = "4GiB")
 
-    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB", runtime = "02:00:00")
+    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB", runtime = "02:00:00", host_mem = "24GiB")
 
     omnetpp = make_bench("620.omnetpp_s").add_input("-c General -r 0")
 
@@ -40,7 +40,7 @@ def get_cpu2017_int():
     exchange2 = make_bench("648.exchange2_s").add_input("6", runtime = "02:00:00")
 
     xz = make_bench("657.xz_s")
-    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "02:00:00")
+    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "02:00:00", host_mem = "36GiB")
     xz.add_input("cld.tar.xz 1400 19cf30ae51eddcbefda78dd06014b4b96281456e078ca7c13e1c0c9e6aaea8dff3efb4ad6b0456697718cede6bd5454852652806a657bb56e07d61128434b474 536995164 539938872 8", mem_size = "8GiB")
 
 
@@ -91,25 +91,24 @@ def compile_mem(wildcards):
 
 rule build_spec_cpu2017:
     input:
-        clang = "compilers/{bin}/build/bin/clang",
-        clangxx = "compilers/{bin}/build/bin/clang++",
-        flang = "compilers/{bin}/build/bin/flang-new",
-        cflags = "compilers/{bin}/cflags",
-        fflags = "compilers/{bin}/fflags",
+        clang = lambda w: get_compiler(w.bin)["bin"] + "/bin/clang",
+        clangxx = lambda w: get_compiler(w.bin)["bin"] + "/bin/clang++",
+        flang = lambda w: get_compiler(w.bin)["bin"] + "/bin/flang-new",
         libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
         libcxx = "libraries/{bin}/libcxx/lib/libc++.a",
         libcxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
     output:
         exe = "{bench}/bin/{bin}/exe",
-        run = directory("{bench}/bin/{bin}/run"),
     params:
         # TODO: Replace realpath with $PWD for simplicity?
         spec_cpu2017_src = cpu2017_src,
         test_suite_src = test_suite_src,
         test_suite_build = "{bench}/bin/{bin}/test-suite",
-        cflags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
-        conlyflags = "-Wno-implicit-int",
+        compile_flags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
+        cflags = lambda w: ["-Wno-implicit-int"] + get_compiler(w.bin)["cflags"],
+        fflags = lambda w: get_compiler(w.bin)["fflags"],
         ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/build/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+        run = "{bench}/bin/{bin}/run",
         type = lambda wildcards: types[wildcards.bench],
     wildcard_constraints:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
@@ -120,7 +119,8 @@ rule build_spec_cpu2017:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=RelWithDebInfo "
         "-DCMAKE_C_COMPILER=$PWD/{input.clang} -DCMAKE_CXX_COMPILER=$PWD/{input.clangxx} -DCMAKE_Fortran_COMPILER=$PWD/{input.flang} "
-        "-DCMAKE_C_FLAGS=\"{params.cflags} {params.conlyflags} $(cat {input.cflags})\" -DCMAKE_CXX_FLAGS=\"{params.cflags} $(cat {input.cflags})\" -DCMAKE_Fortran_FLAGS=\"{params.cflags} $(cat {input.fflags})\" "
+        "-DCMAKE_C_FLAGS=\"{params.compile_flags} {params.cflags}\" -DCMAKE_CXX_FLAGS=\"{params.compile_flags} {params.cflags}\" "
+        "-DCMAKE_Fortran_FLAGS=\"{params.compile_flags} {params.fflags}\" "
         "-DCMAKE_EXE_LINKER_FLAGS=\"{params.ldflags}\" "
         "-DTEST_SUITE_FORTRAN=1 -DTEST_SUITE_SUBDIRS=External -DTEST_SUITE_SPEC2017_ROOT={params.spec_cpu2017_src} "
         "-DTEST_SUITE_RUN_TYPE=ref -DTEST_SUITE_COLLECT_STATS=0 "
@@ -130,4 +130,4 @@ rule build_spec_cpu2017:
         "&& cmake --build {params.test_suite_build} --target {wildcards.bench} "
         "&& BENCH_DIR=$(realpath {params.test_suite_build}/External/SPEC/C{params.type}2017speed/{wildcards.bench}) "
         "&& ln -sf $BENCH_DIR/{wildcards.bench} {output.exe} "
-        "&& ln -sf $BENCH_DIR/run_ref {output.run} "
+        "&& ln -sf $BENCH_DIR/run_ref {params.run} "
