@@ -7,6 +7,12 @@ core_compilers = {
         "cflags": [],
         "fflags": [],
     },
+    "slh": {
+        "src": "../llvm/base-17",
+        "bin": "../llvm/base-17/build",
+        "cflags": ["-mllvm", "-x86-speculative-load-hardening"],
+        "fflags": ["-mllvm", "-x86-speculative-load-hardening"],
+    },
     "sni": {
         "src": "../llvm/ptex-17",
         "bin": "../llvm/ptex-17/build",
