@@ -2,18 +2,22 @@ import copy
 
 core_hwconfs = {
     "unsafe": {
+        "sim": "base",
         "gem5_opts": [],
         "script_opts": ["--ruby", "--enable-prefetch"], # TODO: Bake this into the checkpoint resume rule.
     },
     "spt": {
+        "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1"],
     },
     "tpt": {
+        "sim": "tpt",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
     "utrace": {
+        "sim": "utrace",
         "gem5_opts": ["--debug-flag=uTrace"],
         "script_opts": ["--ruby", "--enable-prefetch"],
     },

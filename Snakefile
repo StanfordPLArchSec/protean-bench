@@ -227,18 +227,21 @@ def get_checkpoint(wildcards):
                   cptid = wildcards.cptid,
                   filename = ["m5.cpt", "system.physmem.store0.pmem"])
 
+def hwconf_to_sim(hwconf):
+    return get_hwconf(hwconf)["sim"]
+
 rule resume_from_checkpoint:
     input:
         cpt_data = get_checkpoint,
-        gem5 = "../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt",
+        gem5 = lambda wildcards: expand("../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt", sim=hwconf_to_sim(wildcards.hwconf)),
         exe = "{bench}/bin/{bin}/exe",
-        run_script = "../gem5/{sim}/configs/AlderLake/se.py",
+        run_script = lambda wildcards: expand("../gem5/{sim}/configs/AlderLake/se.py", sim=hwconf_to_sim(wildcards.hwconf)),
     output:
-        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stamp.txt",
+        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stamp.txt",
     params:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
-        outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+        outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}",
         gem5_opts = lambda w: get_hwconf(w.hwconf)["gem5_opts"],
         script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
     threads: 1
@@ -262,12 +265,12 @@ rule resume_from_checkpoint:
 rule checkpoint_results:
     input:
         script = "helpers/generate-leaf-results.py",
-        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stamp.txt",
+        stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stamp.txt",
         simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
     params:
-        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stats.txt"
+        stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stats.txt"
     output:
-        "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/results.json"
+        "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/results.json"
     shell:
         "{input.script} --stats={params.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
 
@@ -289,7 +292,7 @@ def get_simpoint_weight(wildcards):
 def get_exp_checkpoints(wildcards, *path_components):
     j = get_simpoints_json(wildcards)
     n = len(j)
-    paths = expand("{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
+    paths = expand("{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}",
                    **wildcards, cptid = map(str, range(0, n)))
     return [os.path.join(path, *path_components) for path in paths]
 
@@ -302,7 +305,7 @@ rule bench_results:
         script = "helpers/generate-bench-results.py",
         cpt_results = lambda wildcards: get_exp_checkpoints(wildcards, "results.json"),
     output:
-        "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/results.json"
+        "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/results.json"
     shell:
         "{input.script} {input.cpt_results} --output={output}"
 
