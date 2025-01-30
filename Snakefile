@@ -4,6 +4,7 @@ import json
 
 import bench
 from compilers import get_compiler
+from hwconfs import get_hwconf
 
 container: "ptex.sif"
 
@@ -36,7 +37,6 @@ include: "rules/cpu2017.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
 include: "rules/djbsort.smk"
-include: "rules/hwconf.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
@@ -233,14 +233,14 @@ rule resume_from_checkpoint:
         gem5 = "../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt",
         exe = "{bench}/bin/{bin}/exe",
         run_script = "../gem5/{sim}/configs/AlderLake/se.py",
-        hwconfig = "hwconfs/{hwconf}",
     output:
         stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}/stamp.txt",
     params:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
         outdir = "{bench}/exp/{input}/{bingroup}/{bin}/{sim}/{hwconf}/{cptid}",
-        gem5_opts = lambda wildcards: " ".join(sim_gem5_opts.get(wildcards.sim, []))
+        gem5_opts = lambda w: get_hwconf(w.hwconf)["gem5_opts"],
+        script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
     threads: 1
     resources:
         mem = rules._pincpu.rule.resources["mem"], # TOOD: Shouldn't inherit directly from PinCPU.
@@ -256,8 +256,8 @@ rule resume_from_checkpoint:
         "--restore-simpoint-checkpoint "
         "--cmd={input.exe} "
         "--options=\"{params.workload_args}\" "
-        "$(cat {input.hwconfig}) && " # TODO: Build this into a config file.
-        "touch {output.stamp} "
+        "{params.script_opts} "
+        " && touch {output.stamp} "
 
 rule checkpoint_results:
     input:
