@@ -5,15 +5,28 @@ import os
 import argparse
 import json
 
+sys.path.append(".")
+from benchsuites import benchsuites
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--bench", "-b", action="append", required=True)
+parser.add_argument("--bench", "-b", action="append", default=[])
 parser.add_argument("--exp", "-e", action="append", required=True)
 parser.add_argument("--quiet", "-q", action="store_true")
 parser.add_argument("--bingroup", "-g", required=True)
 parser.add_argument("--metric", "-m", default="cycles")
+parser.add_argument("--suite", "-s", action="append", default=[])
 parser.add_argument("--exp-suffix")
+parser.add_argument("--exclude-bench", "-x", action="append", default=[])
 args = parser.parse_args()
 input = "0" # TODO: Don't hard-code this.
+
+# Collect list of benches.
+benches = set(args.bench)
+for suite in args.suite:
+    benches.update(benchsuites[suite])
+for bench in args.exclude_bench:
+    benches.remove(bench)
+benches = sorted(list(benches))
 
 if args.exp_suffix:
     for i, exp in enumerate(args.exp):
@@ -22,7 +35,7 @@ if args.exp_suffix:
 if not args.quiet:
     print("bench", *args.exp)
 
-for bench in args.bench:
+for bench in benches:
     if not os.path.isdir(bench):
         print(f"not a benchmark directory: {bench}", file=sys.stderr)
         exit(1)
