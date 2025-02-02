@@ -12,6 +12,7 @@ parser.add_argument("--exp", "-e", action="append", required=True)
 parser.add_argument("--exp-suffix", action="append", default=None)
 parser.add_argument("--print", "-p", action="store_true")
 parser.add_argument("--skip-bench", action="append", default=[])
+parser.add_argument("snakemake_cmd")
 parser.add_argument("snakemake_args", nargs="*")
 args = parser.parse_args()
 
@@ -41,7 +42,7 @@ for bench in benches:
         cmd.append(result)
 
 
-cmdv = ["./snakemake-slurm-apptainer.sh", *args.snakemake_args, *cmd]
+cmdv = [args.snakemake_cmd, *args.snakemake_args, *cmd]
 
 if args.print:
     print(*cmdv)
