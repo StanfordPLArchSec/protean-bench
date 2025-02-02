@@ -107,7 +107,9 @@ rule build_spec_cpu2017:
         compile_flags = "-nostdinc++ -nostdlib++ -isystem $PWD/libraries/{bin}/libcxx/include/c++/v1",
         cflags = lambda w: ["-Wno-implicit-int"] + get_compiler(w.bin)["cflags"],
         fflags = lambda w: get_compiler(w.bin)["fflags"],
-        ldflags = "-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath compilers/{bin}/build/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+        ldflags = lambda w: expand("-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath {llvm}/lib) -nostdlib++ -L$(realpath libraries/{bin}/libcxx/lib) -lc++ -lc++abi",
+                                   bin=w.bin,
+                                   llvm=get_compiler(w.bin)["bin"]),
         run = "{bench}/bin/{bin}/run",
         type = lambda wildcards: types[wildcards.bench],
     wildcard_constraints:

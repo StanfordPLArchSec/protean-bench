@@ -3,7 +3,7 @@ import sys
 import json
 
 import bench
-from compilers import get_compiler
+from compilers import get_compiler, is_compiler
 from hwconfs import get_hwconf
 
 container: "ptex.sif"
@@ -12,6 +12,9 @@ container: "ptex.sif"
 gem5_pin_src = "../gem5/pincpu"
 gem5_pin_exe = gem5_pin_src + "/build/X86_MESI_Three_Level/gem5.opt"
 gem5_pin_configs = gem5_pin_src + "/configs"
+gem5_kvm_src = "../gem5/kvmcpu"
+gem5_kvm_exe = gem5_kvm_src + "/build/X86_MESI_Three_Level/gem5.opt"
+gem5_kvm_configs = gem5_kvm_src + "/configs"
 # TODO: Use this using the 'bin' setup.
 addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
@@ -45,6 +48,8 @@ def get_input(wildcards):
     return bench.get_bench(wildcards.bench).get_input(wildcards.input)
 
 def list_bingroup(name):
+    if is_compiler(name):
+        return [name]
     from bingroups import bingroups
     if name not in bingroups:
         raise KeyError(f"bingroup '{bingroup}' does not exist!")
@@ -310,3 +315,20 @@ rule bench_results:
         "{input.script} {input.cpt_results} --output={output}"
 
 include: "rules/stalls.smk"
+
+
+use rule _pincpu as validate_checkpoints_kvm with:
+    input:
+        gem5 = gem5_kvm_exe,
+        exe = "{bench}/bin/{bin}/exe",
+        script = gem5_kvm_configs + "/kvm-resume.py",
+        cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
+    output:
+        **rules._pincpu.output,
+        results_json = "{bench}/cpt/{input}/{bingroup}/{bin}/validate.json",
+    threads: 100000 # So that nobody else gets schedueld when this timing-sensitive command does.
+    params:
+        **rules._pincpu.params,
+        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/validate",
+        script_args = "--results-json={bench}/cpt/{input}/{bingroup}/{bin}/validate.json --checkpoint-dir={bench}/cpt/{input}/{bingroup}/{bin}/cpt"
+

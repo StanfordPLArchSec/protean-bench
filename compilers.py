@@ -32,6 +32,15 @@ g_addons = {
     },
 }
 
+def is_compiler(name):
+    core, *addons = name.split(".")
+    if core not in core_compilers:
+        return False
+    for addon in addons:
+        if addon not in g_addons[core]:
+            return False
+    return True
+
 def get_compiler(name):
     core, *addons = name.split(".")
     compiler = copy.deepcopy(core_compilers[core])
