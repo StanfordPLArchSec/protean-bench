@@ -12,6 +12,7 @@ parser.add_argument("--exp", "-e", action="append", required=True)
 parser.add_argument("--exp-suffix", action="append", default=None)
 parser.add_argument("--print", "-p", action="store_true")
 parser.add_argument("--skip-bench", action="append", default=[])
+parser.add_argument("snakemake_args", nargs="*")
 args = parser.parse_args()
 
 # First, get the full list of benchmarks.
@@ -39,9 +40,11 @@ for bench in benches:
         result = os.path.join(bench, "exp", "0", args.bingroup, exp, "results.json")
         cmd.append(result)
 
+
+cmdv = ["./snakemake-slurm-apptainer.sh", *args.snakemake_args, *cmd]
+
 if args.print:
-    print(*cmd)
+    print(*cmdv)
     exit(0)
 
-os.execlp("./snakemake-slurm-apptainer.sh", *cmd)
-
+os.execvp(cmdv[0], cmdv)
