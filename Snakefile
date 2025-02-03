@@ -40,6 +40,8 @@ include: "rules/cpu2017.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
 include: "rules/djbsort.smk"
+include: "rules/host.smk"
+include: "rules/kvm.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
@@ -93,11 +95,11 @@ use rule _pincpu as bbhist with:
         script = gem5_pin_configs + "/pin-bbhist.py"
     output:
         **rules._pincpu.output,
-        bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
+        bbhist_txt = "{bench}/cpt/{input}/{bin}/{bin}/bbhist.txt",
     params:
         **rules._pincpu.params,
-        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist",
-        script_args = "--bbhist={bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt" # TODO: Reuse definition of bbhist_txt somehow?
+        outdir = "{bench}/cpt/{input}/{bin}/{bin}/bbhist",
+        script_args = "--bbhist={bench}/cpt/{input}/{bin}/{bin}/bbhist.txt" # TODO: Reuse definition of bbhist_txt somehow?
 
 rule instlist:
     input:
@@ -111,9 +113,9 @@ rule instlist:
 rule srclist:
     input:
         exe = "{bench}/bin/{bin}/exe",
-        instlist = "{bench}/cpt/{input}/{bingroup}/{bin}/instlist.txt",
+        instlist = "{bench}/cpt/{input}/{bin}/{bin}/instlist.txt",
     output:
-        srclist = "{bench}/cpt/{input}/{bingroup}/{bin}/srclist.txt"
+        srclist = "{bench}/cpt/{input}/{bin}/{bin}/srclist.txt"
     shell:
         addr2line + " --exe {input.exe} --output-style=JSON < {input.instlist} > {output.srclist}"
 
@@ -139,7 +141,7 @@ rule lehist:
 rule shlocedges:
     input:
         # FIXME: This is a bug!
-        lehist_txts = lambda wildcards: expand("{bench}/cpt/{input}/{bingroup}/{bin}/lehist.txt", bench=wildcards.bench, input=wildcards.input, bingroup=wildcards.bingroup, bin=list_bingroup(wildcards.bingroup)),
+        lehist_txts = lambda wildcards: expand("{bench}/cpt/{input}/{bin}/{bin}/lehist.txt", bench=wildcards.bench, input=wildcards.input, bingroup=wildcards.bingroup, bin=list_bingroup(wildcards.bingroup)),
         shlocedges_py = "helpers/shlocedges.py",
     output:
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt"
@@ -148,8 +150,8 @@ rule shlocedges:
 
 rule waypoints:
     input:
-        bbhist_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbhist.txt",
-        srclocs_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/srclocs.txt",
+        bbhist_txt = "{bench}/cpt/{input}/{bin}/{bin}/bbhist.txt",
+        srclocs_txt = "{bench}/cpt/{input}/{bin}/{bin}/srclocs.txt",
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt",
         waypoints_py = "helpers/waypoints.py",
     output:
@@ -235,6 +237,7 @@ def get_checkpoint(wildcards):
 def hwconf_to_sim(hwconf):
     return get_hwconf(hwconf)["sim"]
 
+# TODO: Rename to 'resume_from_checkpoint_o3'?
 rule resume_from_checkpoint:
     input:
         cpt_data = get_checkpoint,

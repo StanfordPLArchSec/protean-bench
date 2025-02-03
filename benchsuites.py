@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 benchsuites = {
     "cpu2017.int": {
         "600.perlbench_s",
@@ -29,3 +31,15 @@ benchsuites = {
         "djbsort",
     },
 }
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("suite", nargs="+")
+    parser.add_argument("--sep", default="\n")
+    args = parser.parse_args()
+    benches = set()
+    for suite in args.suite:
+        benches.update(benchsuites[suite])
+    benches = sorted(list(benches))
+    print(args.sep.join(benches))
