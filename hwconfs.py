@@ -23,11 +23,26 @@ core_hwconfs = {
     },
 }
 
+def addon_speculation_model(hwconf, speculation_model):
+    hwconf["script_opts"] += [f"--speculation-model={speculation_model}"]
+
+def addon_core_type(hwconf, core_type):
+    hwconf["script_opts"] += [f"--{core_type}"]
+
+def addon_recon(hwconf):
+    hwconf["sim"] += "-recon"
+    hwconf["script_opts"] += ["--recon"]
+
+def addon_ptex(hwconf):
+    hwconf["sim"] += "-ptex"
+
 g_addons = {
-    "ctrl": {"script_opts": ["--speculation-model=Ctrl"]},
-    "atret": {"script_opts": ["--speculation-model=AtRet"]},
-    "ecore": {"script_opts": ["--ecore"]},
-    "pcore": {"script_opts": ["--pcore"]},
+    "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
+    "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
+    "ecore": lambda hwconf: addon_core_type(hwconf, "ecore"),
+    "pcore": lambda hwconf: addon_core_type(hwconf, "pcore"),
+    "recon": addon_recon,
+    "ptex": addon_ptex,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
@@ -35,9 +50,5 @@ def get_hwconf(name):
     core, *addons = name.split(".")
     hwconf = copy.deepcopy(core_hwconfs[core])
     for addon in addons:
-        extra = g_addons[addon]
-        for key, value in extra.items():
-            hwconf[key].extend(value)
+        g_addons[addon](hwconf)
     return hwconf
-            
-        
