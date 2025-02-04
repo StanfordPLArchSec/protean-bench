@@ -9,9 +9,8 @@ def handle_line(line):
     tokens = line.strip().split()
     if tokens[0] != 'STALL:':
         return
-    pc = tokens[1]
-    n = int(tokens[2])
-    hist[pc] += n
+    stall, uop, pc, n, *rest = tokens
+    hist[pc] += int(n)
 
 # STALL: 0x6eafb0 500 ::   MOVQ_XMM_M : ldfp   %xmm1_low, DS:[rdi]
 for line in sys.stdin:
