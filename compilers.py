@@ -29,6 +29,8 @@ g_addons = {
         "h": ["-mllvm", "-x86-ptex-hoist"],
         "p": ["-mllvm", "-x86-ptex-ptrs"],
         "s": ["-mllvm", "-x86-ptex-sink"],
+        "bs": ["-mllvm", "-x86-ptex-analyze-branches", "-mllvm", "-x86-ptex-analyze-branches-split-critical"],
+        "r": ["-mllvm", "-x86-ptex-rotate"],
     },
 }
 
