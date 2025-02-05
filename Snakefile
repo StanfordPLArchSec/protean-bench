@@ -246,6 +246,7 @@ rule resume_from_checkpoint:
         run_script = lambda wildcards: expand("../gem5/{sim}/configs/AlderLake/se.py", sim=hwconf_to_sim(wildcards.hwconf)),
     output:
         stamp = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stamp.txt",
+        dbgout = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/dbgout.txt.gz",
     params:
         **rules._pincpu.params, # TODO: Shouldn't inherit it from PinCPU!
         cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt",
@@ -304,6 +305,12 @@ def get_exp_checkpoints(wildcards, *path_components):
                    **wildcards, cptid = map(str, range(0, n)))
     return [os.path.join(path, *path_components) for path in paths]
 
+def get_exp_heaviest_checkpoint(wildcards, *path_components):
+    weights = get_exp_weights(wildcards)
+    files = get_exp_checkpoints(wildcards, *path_components)
+    file, weight = max(zip(files, weights), key=lambda t: t[1])
+    return file
+
 # TODO: Remove if unused.
 def get_exp_weights(wildcards):
     return list(map(lambda simpoint: simpoint["weight"], get_simpoints_json(wildcards)))
@@ -335,3 +342,31 @@ use rule _pincpu as validate_checkpoints_kvm with:
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/validate",
         script_args = "--results-json={bench}/cpt/{input}/{bingroup}/{bin}/validate.json --checkpoint-dir={bench}/cpt/{input}/{bingroup}/{bin}/cpt"
 
+# Run UniqueLeak on the heaviest SimPoints.
+def get_leakconf(leakconf):
+    cores = {
+        "leak": ["--check-leak"],
+        "check": ["--check-path"],
+    }
+    core, *extras = leakconf.split(".")
+    args = [*cores[core]]
+    for extra in extras:
+        if extra.startswith("t"):
+            args.append(f"--timeout-newleak={extra.removeprefix("t")}ms")
+        elif extra.startswith("f"):
+            args.append(f"--symbolic-reset-every={extra.removeprefix("f")}")
+        else:
+            assert False
+    return args
+    
+rule unique_leak:
+    input:
+        script = "../gem5/utrace/analysis/main.py",
+        dbgout = lambda wildcards: get_exp_heaviest_checkpoint({**wildcards, "hwconf": "utrace.ecore"}, "dbgout.txt.gz"),
+    output:
+        leak = "{bench}/leak/{input}/{bingroup}/{bin}/{leakconf}.txt.gz",
+        time = "{bench}/leak/{input}/{bingroup}/{bin}/{leakconf}.time.txt",
+    params:
+        args = lambda wildcards: get_leakconf(wildcards.leakconf)
+    shell:
+        "/usr/bin/time -vo {output.time} {input.script} {params.args} {input.dbgout} | gzip > {output.leak}"
