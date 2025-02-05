@@ -1,5 +1,6 @@
 # Run UniqueLeak on the heaviest SimPoints.
-def get_leakconf(leakconf):
+def get_leakconf(wildcards):
+    leakconf = wildcards.leakconf
     cores = {
         "leak": ["--check-leak"],
         "check": ["--check-path"],
@@ -13,6 +14,12 @@ def get_leakconf(leakconf):
             args.append(f"--symbolic-reset-every={extra.removeprefix("f")}")
         else:
             assert False
+
+    winlen = int(wildcards["winlen"])
+    winidx = int(wildcards["winidx"])
+    winbegin = winidx * winlen
+    winend = (winidx + 1) * winlen
+    args.extend([f"--begin={winbegin}", f"--end={winend}"])
     return args
     
 rule unique_leak:
@@ -20,9 +27,9 @@ rule unique_leak:
         script = "../gem5/utrace/analysis/main.py",
         dbgout = lambda wildcards: get_exp_heaviest_checkpoint({**wildcards, "hwconf": "utrace.ecore"}, "dbgout.txt.gz"),
     output:
-        leak = "{bench}/leak/{input}/{bingroup}/{bin}/{leakconf}.txt.gz",
-        time = "{bench}/leak/{input}/{bingroup}/{bin}/{leakconf}.time.txt",
+        stdout = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/{leakconf}/{winidx}/stdout.txt.gz",
+        time = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/{leakconf}/{winidx}/time.txt",
     params:
-        args = lambda wildcards: get_leakconf(wildcards.leakconf)
+        args = get_leakconf
     shell:
-        "/usr/bin/time -vo {output.time} {input.script} {params.args} {input.dbgout} | gzip > {output.leak}"
+        "/usr/bin/time -vo {output.time} {input.script} {params.args} --output {output.stdout} {input.dbgout}"
