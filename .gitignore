@@ -1,0 +1,3 @@
+/.snakemake/
+/libraries/
+/6[0-9][0-9].*_s/
