@@ -57,6 +57,14 @@ def list_bingroup(name):
         raise KeyError(f"bingroup '{bingroup}' does not exist!")
     return bingroups[name]
 
+re_name = r"(\w|\.)+"
+wildcard_constraints:
+    bench = re_name,
+    input = re_name,
+    bingroup = re_name,
+    bin = re_name,
+    hwconf = re_name,
+
 # This abstract rule requires:
 # input:
 #   - script: the gem5 run script
