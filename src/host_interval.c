@@ -14,6 +14,20 @@
 #include <sys/ioctl.h>
 #include <sys/resource.h>
 #include <sched.h>
+#include <stdbool.h>
+#include <assert.h>
+
+static bool read_instcount(FILE *f, uint64_t *value) {
+  if (fscanf(f, "%" SCNd64, value) == EOF) {
+    if (ferror(f)) {
+      err(EXIT_FAILURE, "fscanf");
+    } else {
+      assert(feof(f));
+      return false;
+    }
+  }
+  return true;
+}
 
 static long perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
                             int cpu, int group_fd, unsigned long flags) {
@@ -28,7 +42,7 @@ static uint64_t read_counter(int fd) {
 }
 
 static void usage(FILE *f, const char *prog) {
-  fprintf(f, "usage: %s begin end [--] program [arg...]\n",
+  fprintf(f, "usage: %s -i instcount_file [-o output_file] [-C chdir] [--] program [arg...]\n",
           prog);
 }
 
@@ -51,25 +65,45 @@ static void setcpu(int cpu) {
 }
 
 int main(int argc, char *argv[]) {
+  FILE *instcount_file = NULL;
+  FILE *output_file = stderr;
+  const char *change_dir = NULL;
+
   int optc;
-  while ((optc = getopt(argc, argv, "h")) >= 0) {
+  while ((optc = getopt(argc, argv, "hi:o:C:")) >= 0) {
     switch (optc) {
     case 'h':
       usage(stdout, argv[0]);
       return EXIT_SUCCESS;
+    case 'i':
+      if ((instcount_file = fopen(optarg, "r")) == NULL)
+        err(EXIT_FAILURE, "fopen: %s", optarg);
+      break;
+    case 'o':
+      if ((output_file = fopen(optarg, "w")) == NULL)
+        err(EXIT_FAILURE, "fopen: %s", optarg);
+      break;
+    case 'C':
+      change_dir = optarg;
+      break;
     default:
       usage(stderr, argv[0]);
       return EXIT_FAILURE;
     }
   }
 
-  if (argc - optind < 3) {
+  if (change_dir && chdir(change_dir) < 0)
+    err(EXIT_FAILURE, "chdir: %s", change_dir);
+    
+
+  if (argc == optind) {
     usage(stderr, argv[0]);
     return EXIT_FAILURE;
   }
 
-  const uint64_t begin = parse_u64(argv[optind++]);
-  const uint64_t end = parse_u64(argv[optind++]);
+  if (instcount_file == NULL)
+    errx(EXIT_FAILURE, "provide a file to read instruction counts from with '-i'");
+
   char **cmd = &argv[optind];
 
   // Run the parent on CPU 0.
@@ -100,7 +134,10 @@ int main(int argc, char *argv[]) {
   pea.type = PERF_TYPE_HARDWARE;
   pea.size = sizeof pea;
   pea.config = PERF_COUNT_HW_INSTRUCTIONS;
-  pea.sample_period = begin; // break at the beginning of the interval
+  uint64_t first_instcount;
+  if (!read_instcount(instcount_file, &first_instcount))
+    errx(EXIT_FAILURE, "instcount file is empty");
+  pea.sample_period = first_instcount; // break at the beginning of the interval
   pea.disabled = 1;
   pea.exclude_kernel = 1;
   pea.exclude_hv = 1;
@@ -133,54 +170,43 @@ int main(int argc, char *argv[]) {
   pea.exclude_hv = 1;
   pea.pinned = 1;
   int time_fd;
-  if ((time_fd = perf_event_open(&pea, pid, -1, -1, inst_fd)) < 0)
+  if ((time_fd = perf_event_open(&pea, pid, -1, -1, 0)) < 0)
     err(EXIT_FAILURE, "perf_event_open: time");
   if (ioctl(time_fd, PERF_EVENT_IOC_RESET, 0) < 0 ||
       ioctl(time_fd, PERF_EVENT_IOC_ENABLE, 0) < 0)
     err(EXIT_FAILURE, "ioctl");
+
+
+  uint64_t n_insts;
+  while (true) {
+    // Run the child.
+    if (ptrace(PTRACE_CONT, pid, 0, 0) < 0)
+      err(EXIT_FAILURE, "ptrace: PTRACE_CONT");
+
+    // Expect to receive a SIGIO stop.
+    if (wait(&status) < 0)
+      err(EXIT_FAILURE, "wait");
+    if (!(WIFSTOPPED(status) && WSTOPSIG(status) == SIGIO))
+      errx(EXIT_FAILURE, "received wait status other than SIGIO stop");
+
+    // Read the counters.
+    n_insts = read_counter(inst_fd);
+    const uint64_t n_cycles = read_counter(time_fd);
+    fprintf(output_file, "%" PRId64 " %" PRId64 "\n",
+            n_insts, n_cycles);
+
+    // Get the next stop point.
+    uint64_t next_instcount;
+    if (!read_instcount(instcount_file, &next_instcount))
+      break;
+    const uint64_t delta = next_instcount - n_insts;
+    if (ioctl(inst_fd, PERF_EVENT_IOC_PERIOD, &delta) < 0)
+      err(EXIT_FAILURE, "ioctl: PERF_EVENT_IOC_PERIOD");
+  }
   
-  
-  // Run the child.
-  if (ptrace(PTRACE_CONT, pid, 0, 0) < 0)
-    err(EXIT_FAILURE, "ptrace: PTRACE_CONT");
-
-  // Expect to receive a SIGIO stop.
-  if (wait(&status) < 0)
-    err(EXIT_FAILURE, "wait");
-  if (!(WIFSTOPPED(status) && WSTOPSIG(status) == SIGIO))
-    errx(EXIT_FAILURE, "received wait status other than SIGIO stop");
-
-  // Read the counter for funsies.
-  const uint64_t i_begin = read_counter(inst_fd);
-  const uint64_t t_begin = read_counter(time_fd);
-
-  // Now, run until the end of the interval.
-  const uint64_t new_period = end - begin;
-  if (ioctl(inst_fd, PERF_EVENT_IOC_PERIOD, &new_period) < 0)
-    err(EXIT_FAILURE, "ioctl: PERF_EVENT_IOC_PERIOD");
-
-  if (ptrace(PTRACE_CONT, pid, 0, 0) < 0)
-    err(EXIT_FAILURE, "ptrace: PTRACE_CONT");
-
-  // Except to receive a SIGIO stop, again.
-  if (wait(&status) < 0)
-    err(EXIT_FAILURE, "wait");
-  if (!(WIFSTOPPED(status) && WSTOPSIG(status) == SIGIO))
-    errx(EXIT_FAILURE, "received wait status other than SIGIO stop");
-
-  // Read the counter for funsies.
-  const uint64_t i_end = read_counter(inst_fd);
-  const uint64_t t_end = read_counter(time_fd);
-
   // Terminate the child.
   if (ptrace(PTRACE_CONT, pid, 0, SIGTERM) < 0)
     err(EXIT_FAILURE, "ptrace");
   if (wait(NULL) < 0)
     err(EXIT_FAILURE, "wait");
-  
-  // Print out the results.
-  printf("instructions: %ld %ld %ld\n"
-         "ref_cycles: %ld %ld %ld\n",
-         i_begin, i_end, i_end - i_begin,
-         t_begin, t_end, t_end - t_begin);
 }

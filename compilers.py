@@ -34,6 +34,10 @@ g_addons = {
     },
 }
 
+g_addons["sni"]["opt"] = []
+for addon in ["b", "f", "s", "h"]:
+    g_addons["sni"]["opt"].extend(g_addons["sni"][addon])
+
 def is_compiler(name):
     core, *addons = name.split(".")
     if core not in core_compilers:
