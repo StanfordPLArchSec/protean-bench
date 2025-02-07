@@ -4,28 +4,35 @@ import sys
 import os
 import argparse
 import json
+import re
 
 sys.path.append(".")
 from benchsuites import benchsuites
 
+def commalist(s):
+    return s.split(",")
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--bench", "-b", action="append", default=[])
-parser.add_argument("--exp", "-e", action="append", required=True)
+parser.add_argument("--bench", "-b", action="extend", type=commalist, default=[])
+parser.add_argument("--exp", "-e", action="extend", type=commalist, default=[])
 parser.add_argument("--quiet", "-q", action="store_true")
 parser.add_argument("--bingroup", "-g", required=True)
 parser.add_argument("--metric", "-m", default="cycles")
-parser.add_argument("--suite", "-s", action="append", default=[])
+parser.add_argument("--suite", "-s", action="extend", type=commalist, default=[])
 parser.add_argument("--exp-suffix")
-parser.add_argument("--exclude-bench", "-x", action="append", default=[])
+parser.add_argument("--exclude-bench", "-x", action="extend", type=commalist, default=[])
+parser.add_argument("exps", nargs="*")
 args = parser.parse_args()
+args.exp.extend(args.exps)
 input = "0" # TODO: Don't hard-code this.
 
 # Collect list of benches.
 benches = set(args.bench)
 for suite in args.suite:
     benches.update(benchsuites[suite])
-for bench in args.exclude_bench:
-    benches.remove(bench)
+def should_include_bench(bench):
+    return not any([re.search(x, bench) for x in args.exclude_bench])
+benches = filter(should_include_bench, benches)
 benches = sorted(list(benches))
 
 if args.exp_suffix:
