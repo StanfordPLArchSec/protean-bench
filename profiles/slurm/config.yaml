@@ -2,6 +2,7 @@ default-resources:
     slurm_partition: "cafe"
     slurm_account: "cafe"
     runtime: "1h"
+    slurm_extra: "'--nice=343'"
 jobs: 192
 executor: slurm
 use-apptainer: true

@@ -18,29 +18,29 @@ def get_cpu2017_int():
     perlbench.add_input("-I./lib splitmail.pl 6400 12 26 16 100 0")
 
     gcc = make_bench("602.gcc_s")
-    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB", runtime = "02:00:00", host_mem = "20GiB")
+    gcc.add_input("gcc-pp.c -O5 -fipa-pta -o gcc-pp.opts-O5_-fipa-pta.s", mem_size = "16GiB", runtime = "02:00:00", host_mem = "20GiB", resume_mem = "16GiB")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=1000 -fselective-scheduling -fselective-scheduling2 -o gcc-pp.opts-O5_-finline-limit_1000_-fselective-scheduling_-fselective-scheduling2.s", mem_size = "4GiB")
     gcc.add_input("gcc-pp.c -O5 -finline-limit=24000 -fgcse -fgcse-las -fgcse-lm -fgcse-sm -o gcc-pp.opts-O5_-finline-limit_24000_-fgcse_-fgcse-las_-fgcse-lm_-fgcse-sm.s", mem_size = "4GiB")
 
-    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB", runtime = "02:00:00", host_mem = "24GiB")
+    mcf = make_bench("605.mcf_s").add_input("inp.in", mem_size = "16GiB", runtime = "02:00:00", host_mem = "24GiB", resume_mem = "16GiB")
 
     omnetpp = make_bench("620.omnetpp_s").add_input("-c General -r 0")
 
-    xalancbmk = make_bench("623.xalancbmk_s").add_input("-v t5.xml xalanc.xsl")
+    xalancbmk = make_bench("623.xalancbmk_s").add_input("-v t5.xml xalanc.xsl", runtime = "02:00:00")
 
     x264 = make_bench("625.x264_s")
     x264.add_input("--pass 1 --stats x264_stats.log --bitrate 1000 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720")
     x264.add_input("--pass 2 --stats x264_stats.log --bitrate 1000 --dumpyuv 200 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[0]])
     x264.add_input("--seek 500 --dumpyuv 200 --frames 1250 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[1]])
     
-    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "20GiB")
+    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "20GiB", resume_mem = "8GiB")
 
     leela = make_bench("641.leela_s").add_input("ref.sgf")
 
     exchange2 = make_bench("648.exchange2_s").add_input("6", runtime = "02:00:00")
 
     xz = make_bench("657.xz_s")
-    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "02:00:00", host_mem = "36GiB")
+    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "04:00:00", host_mem = "36GiB", resume_mem = "8GiB")
     xz.add_input("cld.tar.xz 1400 19cf30ae51eddcbefda78dd06014b4b96281456e078ca7c13e1c0c9e6aaea8dff3efb4ad6b0456697718cede6bd5454852652806a657bb56e07d61128434b474 536995164 539938872 8", mem_size = "8GiB")
 
 
@@ -50,16 +50,16 @@ def get_cpu2017_fp():
         return bench.make_bench(name)
 
     bwaves = make_bench("603.bwaves_s")
-    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB", runtime = "02:00:00") \
+    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "8GiB") \
           .add_input(stdin = "bwaves_2.in", mem_size = "16GiB", stack_size = "16GiB")
 
-    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "8GiB", runtime = "04:00:00")
+    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "16GiB", runtime = "04:00:00", resume_mem = "12GiB")
 
-    lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB")
+    lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB", host_mem = "20GiB", runtime = "02:00:00")
 
     wrf = make_bench("621.wrf_s").add_input(stack_size = "128MiB", runtime = "04:00:00")
 
-    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB", runtime = "08:00:00")
+    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB", runtime = "24:00:00")
 
     pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB", runtime = "04:00:00")
 
@@ -68,14 +68,14 @@ def get_cpu2017_fp():
         "-contrast-stretch 1x1% -colorspace Lab -channel R -equalize +channel -colorspace sRGB -define histogram:unique-colors=false " \
         "-adaptive-blur 0x5 -despeckle -auto-gamma -adaptive-sharpen 55 -enhance -brightness-contrast 10x10 -resize 30% refspeed_output.tga",
         mem_size = "8GiB",
-        runtime = "08:00:00",
+        runtime = "12:00:00",
     )
 
     nab = make_bench("644.nab_s").add_input("3j1n 20140317 220", mem_size = "1GiB", runtime = "04:00:00")
 
-    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "02:00:00")
+    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "8GiB")
 
-    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "04:00:00")
+    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "04:00:00", resume_mem = "12GiB")
     
 get_cpu2017_int()
 get_cpu2017_fp()

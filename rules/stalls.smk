@@ -3,6 +3,7 @@ rule stalls_checkpoint:
     input:
         dbgout_txt_gz = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/dbgout.txt.gz",
         script = "helpers/stallhist.py",
+        cptdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt" # Just so Snakemake doesn't complain about missing checkpoint input dependency.
     output:
         stalls_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stalls.txt"
     params:

@@ -154,6 +154,7 @@ rule shlocedges:
     output:
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt"
     shell:
+        "mkdir -p $(dirname {output.shlocedges_txt}) && "
         "{input.shlocedges_py} {input.lehist_txts} > {output.shlocedges_txt}"
 
 rule waypoints:
@@ -240,7 +241,11 @@ def get_checkpoint(wildcards):
     return expand("{dir}/cpt.{cptid}/{filename}",
                   dir = checkpoint_output.output,
                   cptid = wildcards.cptid,
-                  filename = ["m5.cpt", "system.physmem.store0.pmem"])
+                  filename = [
+                      "m5.cpt",
+                      # "system.physmem.store0.pmem.ids",
+                      # "system.physmem.store0.pmem.pages",
+                  ])
 
 def hwconf_to_sim(hwconf):
     return get_hwconf(hwconf)["sim"]
@@ -263,8 +268,9 @@ rule resume_from_checkpoint:
         script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
     threads: 1
     resources:
-        mem = rules._pincpu.rule.resources["mem"], # TOOD: Shouldn't inherit directly from PinCPU.
-        runtime = "3h", # TODO: Consider making this dynamic.
+        # mem = rules._pincpu.rule.resources["mem"], # TODO: Shouldn't inherit directly from PinCPU.
+        mem = lambda w: get_input(w).resume_mem, # TODO: Might need to be able to tweak this depending on the checkpoint.
+        runtime = "4h", # TODO: Consider making this dynamic.
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} --debug-file=dbgout.txt.gz {params.gem5_opts} "
@@ -344,7 +350,6 @@ use rule _pincpu as validate_checkpoints_kvm with:
     output:
         **rules._pincpu.output,
         results_json = "{bench}/cpt/{input}/{bingroup}/{bin}/validate.json",
-    threads: 100000 # So that nobody else gets schedueld when this timing-sensitive command does.
     params:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/validate",
