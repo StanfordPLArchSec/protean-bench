@@ -1,6 +1,7 @@
 wildcard_constraints:
     winlen = r"\d+",
     winidx = r"\d+",
+    leakconf = re_name,
 
 # Run UniqueLeak on the heaviest SimPoints.
 def get_leakconf(wildcards):
@@ -60,15 +61,17 @@ rule unique_leak_run_chunk:
 
 def get_unique_leak_chunked_output(wildcards):
     outdir = checkpoints.unique_leak_make_chunks.get(**wildcards).rule.params.outdir
-    output = os.path.join(outdir, "{winidx}/stdout.txt.gz")
-    return expand(output, **wildcards)
+    utraces = glob.glob(os.path.join(expand(outdir, **wildcards)[0], "*", "utrace.txt.gz"))
+    winidxs = [utrace.split("/")[-2] for utrace in utraces]
+    return expand(rules.unique_leak_run_chunk.output.stdout, **wildcards, winidx=winidxs)
 
 rule unique_leak_aggregate:
     input:
         get_unique_leak_chunked_output
     output:
-        "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}/stdout.txt.gz"
-        
+        "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/analysis/{leakconf}/stdout.txt.gz"
+    shell:
+        "gunzip -c {input} | gzip > {output}"
         
 # def get_unique_leak_full_stdouts(wildcards):
 #     # Get the path to the heaviest utrace.
