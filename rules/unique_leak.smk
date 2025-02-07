@@ -1,3 +1,7 @@
+wildcard_constraints:
+    winlen = r"\d+",
+    winidx = r"\d+",
+
 # Run UniqueLeak on the heaviest SimPoints.
 def get_leakconf(wildcards):
     leakconf = wildcards.leakconf
@@ -28,11 +32,9 @@ checkpoint unique_leak_make_chunks:
         utrace = "{bench}/leak/{input}/{bingroup}/{bin}/utrace.txt.gz",
         script = "helpers/uniqleak/chunk.py",
     output:
-        "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}/stamp.txt"
+        "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/utraces/stamp.txt"
     params:
-        outdir = "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}"
-    wildcard_constraints:
-        winlen = r"\d+"
+        outdir = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/utraces"
     shell:
         "rm -rf {params.outdir} && "
         "mkdir {params.outdir} && "
@@ -49,13 +51,25 @@ rule unique_leak_run_chunk:
         script = "../gem5/utrace/analysis/main.py",
         utrace = get_unique_leak_chunked_utrace,
     output:
-        stdout = "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}/{winidx}/{leakconf}/stdout.txt.gz",
-        time = "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}/{winidx}/{leakconf}/time.txt",
+        stdout = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/analysis/{leakconf}/{winidx}/stdout.txt.gz",
+        time = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/analysis/{leakconf}/{winidx}/time.txt",
     params:
         args = get_leakconf
     shell:
         "/usr/bin/time -vo {output.time} {input.script} {params.args} --output {output.stdout} {input.utrace}"
 
+def get_unique_leak_chunked_output(wildcards):
+    outdir = checkpoints.unique_leak_make_chunks.get(**wildcards).rule.params.outdir
+    output = os.path.join(outdir, "{winidx}/stdout.txt.gz")
+    return expand(output, **wildcards)
+
+rule unique_leak_aggregate:
+    input:
+        get_unique_leak_chunked_output
+    output:
+        "{bench}/leak/{input}/{bingroup}/{bin}/chunks/{winlen}/stdout.txt.gz"
+        
+        
 # def get_unique_leak_full_stdouts(wildcards):
 #     # Get the path to the heaviest utrace.
 #     wildcards = {**wildcards, "hwconf": "utrace.ecore"}
