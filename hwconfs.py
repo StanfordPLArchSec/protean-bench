@@ -9,7 +9,7 @@ core_hwconfs = {
     "spt": {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix"],
     },
     "tpt": {
         "sim": "tpt",
