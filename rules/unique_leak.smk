@@ -46,7 +46,7 @@ def get_unique_leak_chunked_utrace(wildcards):
     outdir = checkpoints.unique_leak_make_chunks.get(**wildcards).rule.params.outdir
     utrace = os.path.join(outdir, "{winidx}/utrace.txt.gz")
     return expand(utrace, **wildcards)
-        
+
 rule unique_leak_run_chunk:
     input:
         script = "../gem5/utrace/analysis/main.py",
@@ -56,6 +56,8 @@ rule unique_leak_run_chunk:
         time = "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/analysis/{leakconf}/{winidx}/time.txt",
     params:
         args = get_leakconf
+    resources:
+        mem_mib = lambda wildcards, attempt: 1024 * (2 ** (attempt - 1)) # Start with 1 GiB, then double with each attempt.
     shell:
         "/usr/bin/time -vo {output.time} {input.script} {params.args} --output {output.stdout} {input.utrace}"
 
@@ -63,35 +65,22 @@ def get_unique_leak_chunked_output(wildcards):
     outdir = checkpoints.unique_leak_make_chunks.get(**wildcards).rule.params.outdir
     utraces = glob.glob(os.path.join(expand(outdir, **wildcards)[0], "*", "utrace.txt.gz"))
     winidxs = [utrace.split("/")[-2] for utrace in utraces]
-    return expand(rules.unique_leak_run_chunk.output.stdout, **wildcards, winidx=winidxs)
+    stdouts =  expand(rules.unique_leak_run_chunk.output.stdout, **wildcards, winidx=winidxs)
+    def key(path):
+        return int(path.split("/")[-2])
+    stdouts.sort(key=key)
+    return stdouts
 
 rule unique_leak_aggregate:
     input:
         get_unique_leak_chunked_output
     output:
         "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/analysis/{leakconf}/stdout.txt.gz"
+    # run:
+    #     with gzip.open(output, "wt") as f_out:
+    #         for inpath in input:
+    #             with gzip.open(inpath, "rt") as f_in:
+    #                 shutil.copyfileobj(f_in, f_out)
     shell:
         "gunzip -c {input} | gzip > {output}"
         
-# def get_unique_leak_full_stdouts(wildcards):
-#     # Get the path to the heaviest utrace.
-#     wildcards = {**wildcards, "hwconf": "utrace.ecore"}
-#     utrace_path = get_exp_heaviest_checkpoint(wildcards, "dbgout.txt.gz")
-#     cptid = extract_cptid(utrace_path)
-#     # Read length of the interval.
-#     checkpoints.resume_from_checkpoint.get(**wildcards, cptid=cptid)
-#     n = 0
-#     with gzip.open(utrace_path) as f:
-#         for line in f:
-#             n += 1
-#     winlen = int(wildcards["winlen"])
-#     windows = (n + winlen - 1) // winlen
-#     return expand(rules.unique_leak_chunk.output, **wildcards, winidx=range(0, windows))
-#         
-# rule unique_leak_full:
-#     input:
-#         get_unique_leak_full_stdouts,
-#     output:
-#         "{bench}/leak/{input}/{bingroup}/{bin}/{winlen}/{leakconf}/stamp.txt"
-#     shell:
-#         "touch {output}"
