@@ -18,7 +18,7 @@ core_hwconfs = {
     },
     "tpe": {
         "sim": "tpe",
-        "gem5_opts": [],
+        "gem5_opts": ["--debug-flag=TPE,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpe-reg", "--tpe-mem", "--tpe-xmit"],
     },
     "utrace": {
