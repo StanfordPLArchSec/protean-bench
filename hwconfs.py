@@ -16,6 +16,11 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
+    "tpe": {
+        "sim": "tpe",
+        "gem5_opts": [],
+        "script_opts": ["--ruby", "--enable-prefetch", "--tpe-reg", "--tpe-mem", "--tpe-xmit"],
+    },
     "utrace": {
         "sim": "utrace",
         "gem5_opts": ["--debug-flag=uTrace"],
@@ -36,6 +41,16 @@ def addon_recon(hwconf):
 def addon_ptex(hwconf):
     hwconf["sim"] += "-ptex"
 
+def addon_noimp(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt"):
+        hwconf["script_opts"] += ["--implicit-channel=None"]
+    elif sim.startswith("spt"):
+        hwconf["script_opts"] += ["--configImpFlow=Ignore"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'noimp'")
+        
+
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -43,6 +58,7 @@ g_addons = {
     "pcore": lambda hwconf: addon_core_type(hwconf, "pcore"),
     "recon": addon_recon,
     "ptex": addon_ptex,
+    "noimp": addon_noimp,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
