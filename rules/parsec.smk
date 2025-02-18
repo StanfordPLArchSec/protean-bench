@@ -23,7 +23,7 @@ class Benchmark:
         return f'bin/parsecmgmt -a build -c ptex-{sw_name} -p {self.name}'
 
     def args(self) -> str:
-        return self.arg_template[args.run_type]
+        return self.arg_template["simsmall"] # TODO: Parameterize.
 
     def get_env_script_opts(self) -> list:
         return [f'--env=../env.txt'] if self.env else []
@@ -126,8 +126,17 @@ benches = [
 ]
 benches = dict([(os.path.join(bench.dir, bench.name), bench) for bench in benches])
 
-def get_bench(dir, name):
+def get_parsec_bench(dir, name):
     return benches[os.path.join(dir, name)]
+
+shared_env = "export LLVM=$(realpath {params.llvm}) " \
+        "LIBC=$(realpath {params.libc}) " \
+        "LIBCXX=$(realpath {params.libcxx}) " \
+        "CCAS=$(realpath {params.llvm}/bin/clang) " \
+        "GNU_HOST_NAME=x86_64-pc-linux-gnu " \
+        "GNU_TARGET_NAME=x86_64-pc-linux-gnu " \
+        "CC=$(realpath {input.clang}) " \
+        "CXX=$(realpath {input.clangxx}) && "
 
 rule build_parsec:
     input:
@@ -139,26 +148,44 @@ rule build_parsec:
         libcxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
         bldconf = "parsec/config/ptex-{bin}.bldconf",
     output:
-        "parsec/pkgs/{benchdir}/{bench}/inst/amd64-linux.ptex-{bin}/bin/{exename}"
+        # exe = "parsec/pkgs/{benchdir}/{bench}/inst/amd64-linux.ptex-{bin}/bin/{exename}",
+        stamp = "parsec/pkgs/{benchdir}/{bench}/run/host.{bin}.stamp",
     params:
-        build_cmd = lambda w: get_bench(w.benchdir, w.bench).build_cmd(w.bin),
+        build_cmd = lambda w: get_parsec_bench(w.benchdir, w.bench).build_cmd(w.bin),
         llvm = lambda w: get_compiler(w.bin)["bin"],
         libc = "libraries/{bin}/libc",
         libcxx = "libraries/{bin}/libcxx",
         outdir = lambda w: expand("parsec/pkgs/{benchdir}/{bench}/inst", **w)[0],
     shell:
+        "STAMP=$(realpath {output.stamp}) && "
         "rm -r {params.outdir} && "
-        "export LLVM=$(realpath {params.llvm}) "
-        "LIBC=$(realpath {params.libc}) "
-        "LIBCXX=$(realpath {params.libcxx}) "
-        # "OPENMP=$(realpath {parans.openmp"
-        "CCAS=$(realpath {params.llvm}/bin/clang) "
-        "GNU_HOST_NAME=x86_64-pc-linux-gnu "
-        "GNU_TARGET_NAME=x86_64-pc-linux-gnu "
-        "CC=$(realpath {input.clang}) "
-        "CXX=$(realpath {input.clangxx}) && "
-        "cd parsec && "
-        "{params.build_cmd}"
+        + shared_env +
+        "pushd parsec && "
+        "{params.build_cmd} && "
+        "popd && "
+        "touch {output.stamp}"
+
+rule run_parsec:
+    input:
+        stamp = "parsec/pkgs/{benchdir}/{bench}/run/host.{bin}.stamp",
+        gem5 = lambda w: os.path.abspath(expand("../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt", sim=hwconf_to_sim(w.hwconf))[0]),
+        run_script = lambda w: os.path.abspath(expand("../gem5/{sim}/configs/AlderLake/run.py", sim=hwconf_to_sim(w.hwconf))[0]),
+    output:
+        "parsec/pkgs/{benchdir}/{bench}/run/exp/{bin}/{hwconf}/stamp.txt"
+    params:
+        exe = lambda w: os.path.abspath("parsec/" + get_parsec_bench(w.benchdir, w.bench).get_exe(w.bin)),
+        rundir = lambda w: get_parsec_bench(w.benchdir, w.bench).run_dir(),
+        outdir = "exp/{bin}/{hwconf}",
+        gem5_opts = lambda w: get_hwconf(w.hwconf)["gem5_opts"],
+        script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
+        bench_args = lambda w: get_parsec_bench(w.benchdir, w.bench).args(),
+        env_script_opts = lambda w: get_parsec_bench(w.benchdir, w.bench).get_env_script_opts(),
+    shell:
+        "cd parsec/{params.rundir} && "
+        "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} "
+        "{input.run_script} {params.script_opts} "
+        "-c {params.exe} --options='{params.bench_args}' {params.env_script_opts} && "
+        "touch {output}"
 
 # rule run_parsec:
 #     input:
