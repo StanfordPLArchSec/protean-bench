@@ -270,7 +270,7 @@ rule resume_from_checkpoint:
     resources:
         # mem = rules._pincpu.rule.resources["mem"], # TODO: Shouldn't inherit directly from PinCPU.
         mem = lambda w: get_input(w).resume_mem, # TODO: Might need to be able to tweak this depending on the checkpoint.
-        runtime = "4h", # TODO: Consider making this dynamic.
+        runtime = "6h", # TODO: Consider making this dynamic.
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} --debug-file=dbgout.txt.gz {params.gem5_opts} "
