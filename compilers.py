@@ -4,20 +4,20 @@ core_compilers = {
     "base": {
         "src": "../llvm/base-17",
         "bin": "../llvm/base-17/build",
-        "cflags": [],
-        "fflags": [],
+        "cflags": ["-mno-avx"],
+        "fflags": ["-mno-avx"],
     },
     "slh": {
         "src": "../llvm/base-17",
         "bin": "../llvm/base-17/build",
-        "cflags": ["-mllvm", "-x86-speculative-load-hardening"],
-        "fflags": ["-mllvm", "-x86-speculative-load-hardening"],
+        "cflags": ["-mno-avx", "-mllvm", "-x86-speculative-load-hardening"],
+        "fflags": ["-mno-avx", "-mllvm", "-x86-speculative-load-hardening"],
     },
     "sni": {
         "src": "../llvm/ptex-17",
         "bin": "../llvm/ptex-17/build",
-        "cflags": ["-mllvm", "-x86-ptex=sni"],
-        "fflags": ["-mllvm", "-x86-ptex=sni"],
+        "cflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
+        "fflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
     },
 }
 
