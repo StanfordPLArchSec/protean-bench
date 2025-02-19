@@ -1,5 +1,5 @@
 bingroups = {
-    "main": ["base", "sni.opt"],
+    "main": ["base", "sni"],
     "crit": ["base", "sni", "sni.c"],
     "sink": ["base", "sni", "sni.s", "sni.s.c"],
     "branch": ["base", "sni", "sni.b", "sni.b.f", "sni.b.f.h", "sni.b.f.h.c"],
