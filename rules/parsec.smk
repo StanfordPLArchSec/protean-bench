@@ -168,22 +168,21 @@ rule build_parsec:
 rule run_parsec:
     input:
         stamp = "parsec/pkgs/{benchdir}/{bench}/run/host.{bin}.stamp",
-        gem5 = lambda w: os.path.abspath(expand("../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt", sim=hwconf_to_sim(w.hwconf))[0]),
-        run_script = lambda w: os.path.abspath(expand("../gem5/{sim}/configs/AlderLake/run.py", sim=hwconf_to_sim(w.hwconf))[0]),
+        gem5 = lambda w: expand("../gem5/{sim}/build/X86_MESI_Three_Level/gem5.opt", sim=hwconf_to_sim(w.hwconf)),
+        run_script = lambda w: expand("../gem5/{sim}/configs/AlderLake/run.py", sim=hwconf_to_sim(w.hwconf)),
     output:
         "parsec/pkgs/{benchdir}/{bench}/run/exp/{bin}/{hwconf}/stamp.txt"
     params:
-        exe = lambda w: os.path.abspath("parsec/" + get_parsec_bench(w.benchdir, w.bench).get_exe(w.bin)),
-        rundir = lambda w: get_parsec_bench(w.benchdir, w.bench).run_dir(),
-        outdir = "exp/{bin}/{hwconf}",
+        exe = lambda w: "parsec/" + get_parsec_bench(w.benchdir, w.bench).get_exe(w.bin),
+        rundir = lambda w: "parsec/" + get_parsec_bench(w.benchdir, w.bench).run_dir(),
+        outdir = "parsec/pkgs/{benchdir}/{bench}/run/exp/{bin}/{hwconf}",
         gem5_opts = lambda w: get_hwconf(w.hwconf)["gem5_opts"],
         script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
         bench_args = lambda w: get_parsec_bench(w.benchdir, w.bench).args(),
         env_script_opts = lambda w: get_parsec_bench(w.benchdir, w.bench).get_env_script_opts(),
     shell:
-        "cd parsec/{params.rundir} && "
         "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} "
-        "{input.run_script} {params.script_opts} "
+        "{input.run_script} {params.script_opts} --chdir={params.rundir} "
         "-c {params.exe} --options='{params.bench_args}' {params.env_script_opts} && "
         "touch {output}"
 
