@@ -16,11 +16,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--bench", "-b", action="extend", type=commalist, default=[])
 parser.add_argument("--exp", "-e", action="extend", type=commalist, default=[])
 parser.add_argument("--quiet", "-q", action="store_true")
-parser.add_argument("--bingroup", "-g")
+parser.add_argument("--group", "-g")
 parser.add_argument("--metric", "-m", default="cycles")
 parser.add_argument("--suite", "-s", action="extend", type=commalist, default=[])
-parser.add_argument("--exp-suffix")
-parser.add_argument("--exclude-bench", "-x", action="extend", type=commalist, default=[])
+parser.add_argument("--exp-suffix", action="append")
+parser.add_argument("--exclude-bench", "--skip-bench", "-x", action="extend", type=commalist, default=[])
 parser.add_argument("exps", nargs="*")
 args = parser.parse_args()
 args.exp.extend(args.exps)
@@ -35,26 +35,29 @@ def should_include_bench(bench):
 benches = filter(should_include_bench, benches)
 benches = sorted(list(benches))
 
-if args.exp_suffix:
-    for i, exp in enumerate(args.exp):
-        args.exp[i] = exp + args.exp_suffix
+if not args.exp_suffix or len(args.exp_suffix) == 0:
+    args.exp_suffix = [""]
 
-if not args.quiet:
-    print("bench", *args.exp)
+def print_with_suffix(exp_suffix):
+    if not args.quiet:
+        print("bench", *[exp + exp_suffix for exp in args.exp])
+    for bench in benches:
+        if not os.path.isdir(bench):
+            print(f"not a benchmark directory: {bench}", file=sys.stderr)
+            exit(1)
+        line = [bench]
+        for exp in args.exp:
+            exp += exp_suffix
+            if args.group:
+                exp = os.path.join(args.group, exp)
+            results_json = os.path.join(bench, "exp", input, exp, "results.json")
+            if not os.path.isfile(results_json):
+                print(f"file does not exist: {results_json}", file=sys.stderr)
+            with open(results_json) as f:
+                j = json.load(f)
+            metric = j["stats"][args.metric]
+            line.append(metric)
+        print(*line)
 
-for bench in benches:
-    if not os.path.isdir(bench):
-        print(f"not a benchmark directory: {bench}", file=sys.stderr)
-        exit(1)
-    line = [bench]
-    for exp in args.exp:
-        if args.bingroup:
-            exp = os.path.join(args.bingroup, exp)
-        results_json = os.path.join(bench, "exp", input, exp, "results.json")
-        if not os.path.isfile(results_json):
-            print(f"file does not exist: {results_json}", file=sys.stderr)
-        with open(results_json) as f:
-            j = json.load(f)
-        metric = j["stats"][args.metric]
-        line.append(metric)
-    print(*line)
+for exp_suffix in args.exp_suffix:
+    print_with_suffix(exp_suffix)
