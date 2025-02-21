@@ -42,6 +42,8 @@ g_addons = {
         "r": ["-mllvm", "-x86-ptex-rotate"],
         "nofwd": ["-mllvm", "-x86-ptex-fwd=0"],
         "simple": ["-mllvm", "-x86-ptex-simple"],
+        "fold": ["-mllvm", "-x86-ptex-bugfix-fold"],
+        "lower": ["-mllvm", "-x86-ptex-bugfix-lower"],
     },
 }
 
