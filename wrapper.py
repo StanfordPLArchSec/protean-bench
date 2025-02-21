@@ -5,7 +5,7 @@ from benchsuites import benchsuites
 import os
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--bingroup", "-g", required=True)
+parser.add_argument("--group", "-g", required=True)
 parser.add_argument("--suite", "-s", action="append", default=[])
 parser.add_argument("--bench", "-b", action="append", default=[])
 parser.add_argument("--exp", "-e", action="append", required=True)
@@ -38,7 +38,7 @@ else:
 cmd = []
 for bench in benches:
     for exp in exps:
-        result = os.path.join(bench, "exp", "0", args.bingroup, exp, "results.json")
+        result = os.path.join(bench, "exp", "0", args.group, exp, "results.json")
         cmd.append(result)
 
 
