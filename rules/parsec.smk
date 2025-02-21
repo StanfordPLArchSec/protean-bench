@@ -1,3 +1,5 @@
+import humanfriendly
+
 class Benchmark:
     def __init__(self, name, run_args, mem = None, env = False, exe = None, dir = 'apps'):
         self.name = name
@@ -28,6 +30,11 @@ class Benchmark:
     def get_env_script_opts(self) -> list:
         return [f'--env=../env.txt'] if self.env else []
 
+    def host_mem(self) -> str:
+        base = self.mem if self.mem else "512MiB"
+        return humanfriendly.format_size(humanfriendly.parse_size(base) * 2 +
+                                         humanfriendly.parse_size("2GiB"))
+
 benches = [
     Benchmark(
         name = 'blackscholes',
@@ -52,7 +59,7 @@ benches = [
             'simmedium': '-timing -threads 2',
             'simlarge':  '-timing -threads 2',
         },
-        mem = '4GB'
+        mem = '4GiB'
     ),
     # WARN: May need to fix up thread count here (the number right before output.txt).
     # NOTE: Disabled due to crash. Apparent gem5 base bug (null pointer dereference).
@@ -180,6 +187,10 @@ rule run_parsec:
         script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
         bench_args = lambda w: get_parsec_bench(w.benchdir, w.bench).args(),
         env_script_opts = lambda w: get_parsec_bench(w.benchdir, w.bench).get_env_script_opts(),
+    threads: 1
+    resources:
+        runtime = "5d",
+        mem = lambda w: get_parsec_bench(w.benchdir, w.bench).host_mem(),
     shell:
         "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} "
         "{input.run_script} {params.script_opts} --chdir={params.rundir} "
