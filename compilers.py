@@ -1,4 +1,7 @@
 import copy
+import os
+
+ptex = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 core_compilers = {
     "base": {
@@ -19,6 +22,12 @@ core_compilers = {
         "cflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
         "fflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
     },
+    "declassiflow": {
+        "src": "../llvm/ptex-17",
+        "bin": "../llvm/ptex-17/build",
+        "cflags": ["-mno-avx", f"-fpass-plugin={ptex}/declassiflow/build/lib/libdeclassiflow.so"],
+        "fflags": ["-mno-avx", f"-fpass-plugin={ptex}/declassiflow/build/lib/libdeclassiflow.so"],
+    },
 }
 
 g_addons = {
@@ -31,6 +40,8 @@ g_addons = {
         "s": ["-mllvm", "-x86-ptex-sink"],
         "bs": ["-mllvm", "-x86-ptex-analyze-branches", "-mllvm", "-x86-ptex-analyze-branches-split-critical"],
         "r": ["-mllvm", "-x86-ptex-rotate"],
+        "nofwd": ["-mllvm", "-x86-ptex-fwd=0"],
+        "simple": ["-mllvm", "-x86-ptex-simple"],
     },
 }
 
