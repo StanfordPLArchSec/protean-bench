@@ -36,6 +36,7 @@ num_simpoints = 10
 include: "rules/compile.smk"
 include: "rules/libc.smk"
 include: "rules/libcxx.smk"
+include: "rules/openmp.smk"
 include: "rules/cpu2017.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
