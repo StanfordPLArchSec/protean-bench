@@ -36,6 +36,7 @@ num_simpoints = 10
 include: "rules/compile.smk"
 include: "rules/libc.smk"
 include: "rules/libcxx.smk"
+include: "rules/openmp.smk"
 include: "rules/cpu2017.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
@@ -89,6 +90,7 @@ rule _pincpu:
         # Then, when dynamically computing mem, check whether such a file from a previous run exists and grab the memory limit from there.
         mem = lambda wildcards: get_input(wildcards).mem_plus("2GiB"), # Grant extra memory for gem5. A resonable value will meet needs for most benchmarks, but not all. For those that need more, override the `host_mem` parameter when creating the benchmark input.
         runtime = lambda wildcards: get_input(wildcards).runtime_seconds(),
+        cpus_per_task = 1,
     threads: 1
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
@@ -105,6 +107,7 @@ use rule _pincpu as bbhist with:
     output:
         **rules._pincpu.output,
         bbhist_txt = "{bench}/cpt/{input}/{bin}/{bin}/bbhist.txt",
+    threads: 1
     params:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bin}/{bin}/bbhist",
@@ -116,6 +119,7 @@ rule instlist:
         instlist_py = "helpers/instlist.py",
     output:
         instlist_txt = "{dir,.*}/instlist.txt",
+    threads: 1
     shell:
         "{input.instlist_py} < {input.bbhist_txt} > {output.instlist_txt}"
 
@@ -125,6 +129,7 @@ rule srclist:
         instlist = "{bench}/cpt/{input}/{bin}/{bin}/instlist.txt",
     output:
         srclist = "{bench}/cpt/{input}/{bin}/{bin}/srclist.txt"
+    threads: 1
     shell:
         addr2line + " --exe {input.exe} --output-style=JSON < {input.instlist} > {output.srclist}"
 
@@ -134,6 +139,7 @@ rule srclocs:
         srclocs_py = "helpers/srclocs.py",
     output:
         srclocs = "{dir,.*}/srclocs.txt"
+    threads: 1
     shell:
         "{input.srclocs_py} < {input.srclist_txt} > {output.srclocs}"
 
@@ -144,6 +150,7 @@ rule lehist:
         lehist_py = "helpers/lehist.py",
     output:
         lehist_txt = "{dir,.*}/lehist.txt"
+    threads: 1
     shell:
         "{input.lehist_py} --bbhist={input.bbhist_txt} --srclocs={input.srclocs_txt} > {output.lehist_txt}"
 
@@ -154,6 +161,7 @@ rule shlocedges:
         shlocedges_py = "helpers/shlocedges.py",
     output:
         shlocedges_txt = "{bench}/cpt/{input}/{bingroup}/shlocedges.txt"
+    threads: 1
     shell:
         "mkdir -p $(dirname {output.shlocedges_txt}) && "
         "{input.shlocedges_py} {input.lehist_txts} > {output.shlocedges_txt}"
@@ -166,6 +174,7 @@ rule waypoints:
         waypoints_py = "helpers/waypoints.py",
     output:
         waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
+    threads: 1
     shell:
         "{input.waypoints_py} --bbhist={input.bbhist_txt} --srclocs={input.srclocs_txt} --shlocedges={input.shlocedges_txt} > {output.waypoints_txt}"
 
@@ -178,6 +187,7 @@ use rule _pincpu as bbv with:
         **rules._pincpu.output,
         bbv_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv.txt",
         bbvinfo_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/bbvinfo.txt",
+    threads: 1
     params:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/bbv",
@@ -193,6 +203,7 @@ rule intervals:
     params:
         outdir = "{dir,.*}/intervals",
         num_simpoints = num_simpoints,
+    threads: 1
     shell:
         "if ! [ -d {params.outdir} ]; then mkdir {params.outdir}; fi && "
         "{input.simpoint_exe} -loadFVFile {input.bbv_txt} -maxK {params.num_simpoints} -saveSimpoints "
@@ -215,6 +226,7 @@ rule simpoints_json:
         simpoints_py = "helpers/simpoints.py",
     output:
         simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json"
+    threads: 1
     shell:
         "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
 
@@ -227,6 +239,7 @@ checkpoint checkpoint:
     output:
         **rules._pincpu.output,
         cptdir = directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt"),
+    threads: 1
     params:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
@@ -272,6 +285,7 @@ rule resume_from_checkpoint:
         # mem = rules._pincpu.rule.resources["mem"], # TODO: Shouldn't inherit directly from PinCPU.
         mem = lambda w: get_input(w).resume_mem, # TODO: Might need to be able to tweak this depending on the checkpoint.
         runtime = "6h", # TODO: Consider making this dynamic.
+        cpus_per_task = 1,
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
         "{input.gem5} -re --silent-redirect -d {params.outdir} --debug-file=dbgout.txt.gz {params.gem5_opts} "
@@ -295,6 +309,7 @@ rule checkpoint_results:
         stats_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/stats.txt"
     output:
         "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/{cptid}/results.json"
+    threads: 1
     shell:
         "{input.script} --stats={params.stats_txt} --simpoints-json={input.simpoints_json} --simpoint-idx={wildcards.cptid} --output={output}"
 
@@ -351,6 +366,7 @@ use rule _pincpu as validate_checkpoints_kvm with:
     output:
         **rules._pincpu.output,
         results_json = "{bench}/cpt/{input}/{bingroup}/{bin}/validate.json",
+    threads: 1
     params:
         **rules._pincpu.params,
         outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/validate",

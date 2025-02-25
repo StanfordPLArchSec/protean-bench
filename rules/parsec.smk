@@ -165,7 +165,7 @@ rule build_parsec:
         outdir = lambda w: expand("parsec/pkgs/{benchdir}/{bench}/inst", **w)[0],
     shell:
         "STAMP=$(realpath {output.stamp}) && "
-        "rm -r {params.outdir} && "
+        "rm -rf {params.outdir} && "
         + shared_env +
         "pushd parsec && "
         "{params.build_cmd} && "
