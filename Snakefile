@@ -58,7 +58,7 @@ def list_bingroup(name):
         raise KeyError(f"bingroup '{bingroup}' does not exist!")
     return bingroups[name]
 
-re_name = r"(\w|\.)+"
+re_name = r"(\w|[.-])+"
 wildcard_constraints:
     bench = re_name,
     input = re_name,
