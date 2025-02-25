@@ -48,12 +48,33 @@ def addon_ptex(hwconf):
 
 def addon_noimp(hwconf):
     sim = hwconf["sim"]
-    if sim.startswith("tpt"):
+    if sim.startswith("tpt") or sim.startswith("stt"):
         hwconf["script_opts"] += ["--implicit-channel=None"]
     elif sim.startswith("spt"):
         hwconf["script_opts"] += ["--configImpFlow=Ignore"]
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'noimp'")
+
+def addon_eager(hwconf):
+    sim = hwconf["sim"]
+    assert sim.startswith("tpt")
+    hwconf["script_opts"] += ["--implicit-channel=Eager"]
+
+def addon_noshadow(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt"):
+        hwconf["script_opts"] += ["--ptex-mem=None"]
+    elif sim.startswith("spt"):
+        hwconf["script_opts"] += ["--enableShadowL1=0"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'noshadow'")
+
+def addon_naive(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt"):
+        hwconf["script_opts"] += ["--tpt-mode=Naive"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'naive'")
 
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
@@ -63,6 +84,9 @@ g_addons = {
     "recon": addon_recon,
     "ptex": addon_ptex,
     "noimp": addon_noimp,
+    "eager": addon_eager,
+    "noshadow": addon_noshadow,
+    "naive": addon_naive,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
