@@ -16,6 +16,11 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
+    "stt": {
+        "sim": "stt",
+        "gem5_opts": [],
+        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy"],
+    },
     "tpe": {
         "sim": "tpe",
         "gem5_opts": ["--debug-flag=TPE,TransmitterStalls"],
@@ -49,7 +54,6 @@ def addon_noimp(hwconf):
         hwconf["script_opts"] += ["--configImpFlow=Ignore"]
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'noimp'")
-        
 
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
