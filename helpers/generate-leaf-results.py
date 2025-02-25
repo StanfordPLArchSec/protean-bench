@@ -30,20 +30,25 @@ def find_simpoint():
 simpoint = find_simpoint()
 
 class Stat:
-    def __init__(self, name: str, required: bool = True):
+    def __init__(self, name: str, required: bool = False, minimum: int = None):
         self.name = name
         self.required = required
         self.value = None
+        self.count = 0
+        self.minimum = minimum
 
 key_insts = 'system.switch_cpus.commitStats0.numInsts'
 stats = {
-    key_insts: Stat('insts'),
-    'system.switch_cpus.ipc': Stat('ipc'),
-    'system.switch_cpus.numCycles': Stat('cycles'),
-    'system.switch_cpus.commit.committedAnnotatedUnprotectedRegisterRate': Stat('pub-annot-reg-rate', required = False),
-    'system.switch_cpus.commit.committedAnnotatedUnprotectedLoadRate': Stat('pub-annot-load-rate', required = False),
-    'system.switch_cpus.commit.committedAnnotatedUnprotectedLoadCount': Stat('pub-annot-load-count', required = False),
-    'system.switch_cpus.commit.committedAnnotatedLoadCount': Stat('annot-load-count', required = False),
+    key_insts: Stat('insts', required = True, minimum = 2),
+    'system.switch_cpus.ipc': Stat('ipc', required = True),
+    'system.switch_cpus.numCycles': Stat('cycles', required = True),
+    'system.switch_cpus.commit.committedAnnotatedUnprotectedRegisterRate': Stat('pub-annot-reg-rate'),
+    'system.switch_cpus.commit.committedAnnotatedUnprotectedLoadRate': Stat('pub-annot-load-rate'),
+    'system.switch_cpus.commit.committedAnnotatedUnprotectedLoadCount': Stat('pub-annot-load-count'),
+    'system.switch_cpus.commit.committedAnnotatedLoadCount': Stat('annot-load-count'),
+    'system.switch_cpus.commit.regTaints': Stat('reg-taints'),
+    'system.switch_cpus.commit.memTaints': Stat('mem-taints'),
+    'system.switch_cpus.commit.xmitTaints': Stat('xmit-taints'),
 }
 # stats = dict(map(lambda x: (x.name(), None), keys.values()))
 with open(args.stats) as f:
@@ -55,10 +60,14 @@ with open(args.stats) as f:
         if key in stats:
             stat = stats[key]
             stat.value = float(tokens[1])
+            stat.count += 1
 
 for stat in stats.values():
     if stat.required and stat.value is None:
-        print("Didn't find stat {stat.name} in {args.stats}!", file=sys.stderr)
+        print(f"Didn't find stat {stat.name} in {args.stats}!", file=sys.stderr)
+        exit(1)
+    if stat.minimum and stat.count < stat.minimum:
+        print(f"Found only {stat.count} < {stat.minimum} instances of stat {stat.name}!", file=sys.stderr)
         exit(1)
 
 def get_stats_dict(stats) -> dict:
