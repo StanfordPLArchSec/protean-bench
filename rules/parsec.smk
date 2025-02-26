@@ -144,6 +144,7 @@ def get_parsec_bench(dir, name):
 shared_env = "export LLVM=$(realpath {params.llvm}) " \
         "LIBC=$(realpath {params.libc}) " \
         "LIBCXX=$(realpath {params.libcxx}) " \
+        "OMP=$(realpath {params.omp})/runtime/src " \
         "CCAS=$(realpath {params.llvm}/bin/clang) " \
         "GNU_HOST_NAME=x86_64-pc-linux-gnu " \
         "GNU_TARGET_NAME=x86_64-pc-linux-gnu " \
@@ -158,6 +159,7 @@ rule build_parsec:
         libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
         libcxx = "libraries/{bin}/libcxx/lib/libc++.a",
         libcxxabi = "libraries/{bin}/libcxx/lib/libc++abi.a",
+        omp = "libraries/{bin}/openmp/runtime/src/libomp.a",
         bldconf = "parsec/config/ptex-{bin}.bldconf",
     output:
         # exe = "parsec/pkgs/{benchdir}/{bench}/inst/amd64-linux.ptex-{bin}/bin/{exename}",
@@ -167,7 +169,8 @@ rule build_parsec:
         llvm = lambda w: get_compiler(w.bin)["bin"],
         libc = "libraries/{bin}/libc",
         libcxx = "libraries/{bin}/libcxx",
-        outdir = lambda w: expand("parsec/pkgs/{benchdir}/{bench}/inst", **w)[0],
+        omp = "libraries/{bin}/openmp",
+        outdir = lambda w: expand("parsec/pkgs/{benchdir}/{bench}/inst/amd64-linux.ptex-{bin}", **w)[0],
     shell:
         "STAMP=$(realpath {output.stamp}) && "
         "rm -rf {params.outdir} && "
