@@ -1,14 +1,15 @@
 import humanfriendly
 
 class Benchmark:
-    def __init__(self, name, run_args, mem = None, env = False, exe = None, dir = 'apps'):
+    def __init__(self, name, run_args, mem = None, env = False, exe = None, dir = 'apps', host_mem = None):
         self.name = name
         self.arg_template = run_args
         self.mem = mem
         self.env = env
         self.exe = exe if exe else name
         self.dir = dir
-
+        self.host_mem_ = host_mem
+        
     def root_dir(self) -> str:
         return os.path.join('pkgs', self.dir, self.name)
 
@@ -31,6 +32,8 @@ class Benchmark:
         return [f'--env=../env.txt'] if self.env else []
 
     def host_mem(self) -> str:
+        if self.host_mem_:
+            return self.host_mem_
         base = self.mem if self.mem else "512MiB"
         return humanfriendly.format_size(humanfriendly.parse_size(base) * 2 +
                                          humanfriendly.parse_size("2GiB"))
@@ -76,6 +79,7 @@ benches = [
             'simmedium': '8 5 in_100K.fluid out.fluid',
             'simlarge':  '8 5 in_300K.fluid out.fluid',
         },
+        host_mem = "8GiB",
     ),
     # WARN: Untested on host.
     # TODO: Need to set OMP_NUM_THREADS.
@@ -122,6 +126,7 @@ benches = [
         name = 'dedup',
         dir = 'kernels',
         run_args = {'simsmall': '-c -p -v -t 4 -i media.dat -o output.dat.ddp'},
+        host_mem = "8GiB",
     ),
 
     # TODO: In pkgs/kernels.
