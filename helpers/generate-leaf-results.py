@@ -49,6 +49,8 @@ stats = {
     'system.switch_cpus.commit.regTaints': Stat('reg-taints'),
     'system.switch_cpus.commit.memTaints': Stat('mem-taints'),
     'system.switch_cpus.commit.xmitTaints': Stat('xmit-taints'),
+    'system.switch_cpus.commit.protRegs': Stat('prot-regs'),
+    'system.switch_cpus.commit.unprotRegs': Stat('unprot-regs'),
 }
 # stats = dict(map(lambda x: (x.name(), None), keys.values()))
 with open(args.stats) as f:
