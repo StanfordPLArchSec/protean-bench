@@ -62,18 +62,29 @@ rule host_results:
     shell:
         "{input.script} --simpoints-json {input.simpoints_json} --profile {input.profile} > {output}"
 
+def get_corenum(w):
+    if w.core == "pcore":
+        return 2
+    elif w.core == "ecore":
+        return 23
+    else:
+        raise ValueError(f"bad core type {w.core}")
+        
 rule host_perf:
     input: "{bench}/bin/{bin}/exe",
-    output: "{bench}/host/{input}/{bin}/perf.txt"
+    output: "{bench}/host/{input}/{bin}/perf.{core}.txt"
     params:
         # TODO: Factor this out to common rule with pincpu.
         # TODO: Add mem resources.
         run = "{bench}/bin/{bin}/run",
         workload_args = lambda wildcards: get_input(wildcards).args,
         stdin = lambda wildcards: get_input(wildcards).stdin,
+        corenum = get_corenum,
+    wildcard_constraints:
+        core = r"(pcore|ecore)"
     shell:
         "EXE=$(realpath {input}) && "
         "OUT=$(realpath {output}) && "
         "cd {params.run} && "
-        "taskset -c 2 perf stat --all-user -e instructions -e ref-cycles -o $OUT -- $EXE {params.workload_args} < {params.stdin}"
+        "taskset -c {params.corenum} perf stat --all-user -e instructions -e ref-cycles -o $OUT -- $EXE {params.workload_args} < {params.stdin}"
       

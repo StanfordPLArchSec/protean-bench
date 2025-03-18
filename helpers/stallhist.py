@@ -2,12 +2,20 @@
 
 import sys
 import collections
+import argparse
+import re
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--regex", type=re.compile)
+args = parser.parse_args()
 
 hist = collections.defaultdict(int)
 
 def handle_line(line):
     tokens = line.strip().split()
     if tokens[0] != 'STALL:':
+        return
+    if args.regex and not args.regex.search(line):
         return
     stall, uop, pc, n, *rest = tokens
     hist[pc] += int(n)

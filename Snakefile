@@ -141,7 +141,7 @@ rule srclocs:
         srclocs = "{dir,.*}/srclocs.txt"
     threads: 1
     shell:
-        "{input.srclocs_py} < {input.srclist_txt} > {output.srclocs}"
+        "{input.srclocs_py} --basename < {input.srclist_txt} > {output.srclocs}"
 
 rule lehist:
     input:

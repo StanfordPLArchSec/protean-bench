@@ -13,14 +13,14 @@ rule clone_ctaes:
 
 rule build_ctaes:
     input:
-        # TODO: Inherit from common rule?
-        clang = "compilers/{bin}/llvm/bin/clang",
-        cflags = "compilers/{bin}/cflags", # TODO: This should be in a config file.
+        clang = lambda w: get_compiler(w.bin)["bin"] + "/bin/clang",
         libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
         git_repo = "ctaes/bin/{bin}/git",
     output:
         exe = "ctaes/bin/{bin}/exe",
         run = directory("ctaes/bin/{bin}/run"),
+    params:
+        cflags = lambda w: get_compiler(w.bin)["cflags"] + ["-O2", "-g"]
     shell:
-        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} $(cat {input.cflags}) -static -L$(dirname {input.libc}) -lllvmlibc -fuse-ld=lld && "
+        "{input.clang} {input.git_repo}/ctaes.c {input.git_repo}/bench.c -o {output.exe} {params.cflags} -static -L$(dirname {input.libc}) -lllvmlibc -fuse-ld=lld && "
         "ln -sf . {output.run} "
