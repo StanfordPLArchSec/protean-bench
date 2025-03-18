@@ -33,7 +33,7 @@ def get_cpu2017_int():
     x264.add_input("--pass 2 --stats x264_stats.log --bitrate 1000 --dumpyuv 200 --frames 1000 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[0]])
     x264.add_input("--seek 500 --dumpyuv 200 --frames 1250 -o BuckBunny_New.264 BuckBunny.yuv 1280x720", deps = [x264.inputs[1]])
     
-    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "20GiB", resume_mem = "8GiB")
+    deepsjeng = make_bench("631.deepsjeng_s").add_input("ref.txt", mem_size = "8GiB", host_mem = "20GiB", resume_mem = "20GiB")
 
     leela = make_bench("641.leela_s").add_input("ref.sgf")
 
@@ -50,18 +50,19 @@ def get_cpu2017_fp():
         return bench.make_bench(name)
 
     bwaves = make_bench("603.bwaves_s")
-    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "8GiB") \
+    bwaves.add_input(stdin = "bwaves_1.in", mem_size = "16GiB", stack_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "16GiB") \
           .add_input(stdin = "bwaves_2.in", mem_size = "16GiB", stack_size = "16GiB")
 
-    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "16GiB", runtime = "04:00:00", resume_mem = "12GiB")
+    cactuBSSN = make_bench("607.cactuBSSN_s").add_input("spec_ref.par", mem_size = "16GiB", runtime = "04:00:00", resume_mem = "64GiB")
 
-    lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB", host_mem = "20GiB", runtime = "02:00:00")
+    lbm = make_bench("619.lbm_s").add_input("2000 reference.dat 0 0 200_200_260_ldc.of", mem_size = "4GiB", host_mem = "20GiB",
+                                            runtime = "02:00:00", resume_mem = "8GiB")
 
     wrf = make_bench("621.wrf_s").add_input(stack_size = "128MiB", runtime = "04:00:00")
 
-    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB", runtime = "24:00:00")
+    cam4 = make_bench("627.cam4_s").add_input(mem_size = "1GiB", stack_size = "128MiB", runtime = "24:00:00", resume_mem = "32GiB")
 
-    pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB", runtime = "04:00:00")
+    pop2 = make_bench("628.pop2_s").add_input(mem_size = "2GiB", stack_size = "2GiB", runtime = "08:00:00", resume_mem = "8GiB")
 
     imagick = make_bench("638.imagick_s").add_input(
         "-limit disk 0 refspeed_input.tga -resize 817% -rotate -2.76 -shave 540x375 -alpha remove -auto-level " \
@@ -69,11 +70,12 @@ def get_cpu2017_fp():
         "-adaptive-blur 0x5 -despeckle -auto-gamma -adaptive-sharpen 55 -enhance -brightness-contrast 10x10 -resize 30% refspeed_output.tga",
         mem_size = "8GiB",
         runtime = "12:00:00",
+        resume_mem = "8GiB",
     )
 
     nab = make_bench("644.nab_s").add_input("3j1n 20140317 220", mem_size = "1GiB", runtime = "04:00:00")
 
-    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "8GiB")
+    fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "16GiB")
 
     roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "04:00:00", resume_mem = "12GiB")
     
@@ -84,7 +86,7 @@ def compile_mem(wildcards):
     d = {
         "602.gcc_s": "4GiB",
         "607.cactuBSSN_s": "2GiB",
-        "621.wrf_s": "8GiB",
+        "621.wrf_s": "16GiB",
         "628.pop2_s": "2GiB",
     }
     return d.get(wildcards.bench, "1GiB")
@@ -116,7 +118,8 @@ rule build_spec_cpu2017:
         bench = r"6\d\d\.[a-zA-Z0-9]+_s"
     threads: 8
     resources:
-        mem = compile_mem
+        mem = compile_mem,
+        runtime = "12h",
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -S {params.test_suite_src} -B {params.test_suite_build} -DCMAKE_BUILD_TYPE=RelWithDebInfo "

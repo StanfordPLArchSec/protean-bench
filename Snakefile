@@ -284,7 +284,7 @@ rule resume_from_checkpoint:
     resources:
         # mem = rules._pincpu.rule.resources["mem"], # TODO: Shouldn't inherit directly from PinCPU.
         mem = lambda w: get_input(w).resume_mem, # TODO: Might need to be able to tweak this depending on the checkpoint.
-        runtime = "6h", # TODO: Consider making this dynamic.
+        runtime = "12h", # TODO: Consider making this dynamic.
         cpus_per_task = 1,
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "

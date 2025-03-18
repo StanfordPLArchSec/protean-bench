@@ -28,8 +28,14 @@ class Benchmark:
     def args(self) -> str:
         return self.arg_template["simsmall"] # TODO: Parameterize.
 
+    # TODO: Rename to get_script_opts().
     def get_env_script_opts(self) -> list:
-        return [f'--env=../env.txt'] if self.env else []
+        script_opts = []
+        if self.mem:
+            script_opts.append(f"--mem-size={self.mem}")
+        if self.env:
+            script_opts.append(f"--env=../env.txt")
+        return script_opts
 
     def host_mem(self) -> str:
         if self.host_mem_:
@@ -62,7 +68,8 @@ benches = [
             'simmedium': '-timing -threads 2',
             'simlarge':  '-timing -threads 2',
         },
-        mem = '4GiB'
+        mem = "8GiB",
+        host_mem = "128GiB",
     ),
     # WARN: May need to fix up thread count here (the number right before output.txt).
     # NOTE: Disabled due to crash. Apparent gem5 base bug (null pointer dereference).
@@ -93,6 +100,7 @@ benches = [
         name = 'raytrace',
         exe = 'rtview',
         run_args = {'simsmall': 'happy_buddha.obj -automove -nthreads 15 -frames 3 -res 480 270'},
+        host_mem = "16GiB",
     ),
     Benchmark(
         name = 'swaptions',
@@ -113,6 +121,7 @@ benches = [
     Benchmark(
         name = 'x264',
         run_args = {'simsmall': '--quiet --qp 20 --partitions b8x8,i4x4 --ref 5 --direct auto --b-pyramid --weightb --mixed-refs --no-fast-pskip --me umh --subme 7 --analyse b8x8,i4x4 --threads 15 -o eledream.264 eledream_640x360_8.y4m'},
+        host_mem = "8GiB",
     ),
 
     # TODO: In pkgs/kernels.
@@ -120,6 +129,7 @@ benches = [
         name = 'canneal',
         dir = 'kernels',
         run_args = {'simsmall': '15 10000 2000 100000.nets 32'},
+        host_mem = "8GiB",
     ),
 
     Benchmark(
@@ -199,8 +209,9 @@ rule run_parsec:
     resources:
         runtime = "5d",
         mem = lambda w: get_parsec_bench(w.benchdir, w.bench).host_mem(),
+        cpus_per_task = 1,
     shell:
-        "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} "
+        "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} --debug-file=dbgout.txt.gz "
         "{input.run_script} {params.script_opts} --chdir={params.rundir} "
         "-c {params.exe} --options='{params.bench_args}' {params.env_script_opts} && "
         "touch {output}"

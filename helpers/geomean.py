@@ -15,7 +15,7 @@ for i in range(n):
     l = list()
     for line in lines:
         l.append(float(line.split()[i+1]))
-    output.append(f'{pow(math.prod(l), 1 / len(l)):.4}')
+    output.append(f'{pow(math.prod(l), 1 / len(l)):.4f}')
 for line in lines:
     print(line, end = '')
 print(*output)

@@ -5,6 +5,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp", "-x", action="append", required=True)
+parser.add_argument("--bench", "-b", action="append")
 parser.add_argument("snakemake_cmd", nargs="+")
 args = parser.parse_args()
 
@@ -24,6 +25,9 @@ benches = [
     "kernels/dedup",
     "kernels/streamcluster",
 ]
+if args.bench and len(args.bench) > 0:
+    benches = args.bench
+
 for bench in benches:
     for exp in args.exp:
         cmd.append(f"parsec/pkgs/{bench}/run/exp/{exp}/stamp.txt")

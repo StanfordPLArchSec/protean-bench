@@ -4,6 +4,8 @@ import argparse
 import json
 import types
 import sys
+import os
+import gzip
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--stats', required = True, help = '(Input) Path to m5out/stats.txt')
@@ -49,6 +51,8 @@ stats = {
     'system.switch_cpus.commit.regTaints': Stat('reg-taints'),
     'system.switch_cpus.commit.memTaints': Stat('mem-taints'),
     'system.switch_cpus.commit.xmitTaints': Stat('xmit-taints'),
+    'system.switch_cpus.commit.protRegs': Stat('prot-regs'),
+    'system.switch_cpus.commit.unprotRegs': Stat('unprot-regs'),
 }
 # stats = dict(map(lambda x: (x.name(), None), keys.values()))
 with open(args.stats) as f:
@@ -81,6 +85,24 @@ results = {
     'simpoint': simpoint.__dict__,
     'stats': get_stats_dict(stats),
 }
+
+# HACK: Compute transmitter stalls.
+dbgout_path = os.path.join(os.path.dirname(args.stats), "dbgout.txt.gz")
+if os.path.isfile(dbgout_path):
+    stalls = 0
+    with gzip.open(dbgout_path, "rt") as f:
+        for line in f:
+            if line.startswith("STALL:"):
+                stalls += int(line.split()[3])
+    results["stats"]["stalls"] = stalls
+
+if "unprot-regs" in results["stats"]:
+    results["stats"]["unprot-regs-inst"] = results["stats"]["unprot-regs"] / results["stats"]["insts"]
+
+if "unprot-regs" in results["stats"]:
+    unprot = results["stats"]["unprot-regs"]
+    prot = results["stats"]["prot-regs"]
+    results["stats"]["unprot-regs-rate"] = unprot / (unprot + prot)
 
 with open(args.output, 'wt') as f:
     json.dump(results, f, indent = 4)

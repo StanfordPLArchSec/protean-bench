@@ -1,11 +1,11 @@
 default-resources:
-    slurm_partition: "cafe"
+    slurm_partition: "cafe-lo"
     slurm_account: "cafe"
     runtime: "1h"
-    slurm_extra: "'--nice=343'"
+    slurm_extra: "'--nice=343 --hint=nomultithread'"
 jobs: 192
 executor: slurm
 use-apptainer: true
-apptainer-args: "--home $PWD/.."
+apptainer-args: "--home /cafe/u/nmosier/ptex"
 # latency-wait: 10
 rerun-incomplete: true
