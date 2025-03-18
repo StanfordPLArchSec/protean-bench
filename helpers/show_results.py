@@ -21,6 +21,7 @@ parser.add_argument("--metric", "-m", default="cycles")
 parser.add_argument("--suite", "-s", action="extend", type=commalist, default=[])
 parser.add_argument("--exp-suffix", action="append")
 parser.add_argument("--exclude-bench", "--skip-bench", "-x", action="extend", type=commalist, default=[])
+parser.add_argument("--check-time")
 parser.add_argument("exps", nargs="*")
 args = parser.parse_args()
 args.exp.extend(args.exps)
@@ -51,11 +52,12 @@ def print_with_suffix(exp_suffix):
             if args.group:
                 exp = os.path.join(args.group, exp)
             results_json = os.path.join(bench, "exp", input, exp, "results.json")
-            if not os.path.isfile(results_json):
-                print(f"file does not exist: {results_json}", file=sys.stderr)
-            with open(results_json) as f:
-                j = json.load(f)
-            metric = j["stats"][args.metric]
+            try:
+                with open(results_json) as f:
+                    j = json.load(f)
+                metric = j["stats"][args.metric]
+            except FileNotFoundError:
+                metric = "-"
             line.append(metric)
         print(*line)
 

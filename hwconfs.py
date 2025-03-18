@@ -69,6 +69,15 @@ def addon_noshadow(hwconf):
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'noshadow'")
 
+def addon_shadowmem(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt"):
+        hwconf["script_opts"] += ["--ptex-mem=ShadowMem"]
+    elif sim.startswith("spt"):
+        hwconf["script_opts"] += ["--bottomlessShadowL1=1"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'shadowmem'")
+    
 def addon_naive(hwconf):
     sim = hwconf["sim"]
     if sim.startswith("tpt"):
@@ -86,6 +95,7 @@ g_addons = {
     "noimp": addon_noimp,
     "eager": addon_eager,
     "noshadow": addon_noshadow,
+    "shadowmem": addon_shadowmem,
     "naive": addon_naive,
 }
 

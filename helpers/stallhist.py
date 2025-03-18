@@ -9,6 +9,9 @@ def handle_line(line):
     tokens = line.strip().split()
     if tokens[0] != 'STALL:':
         return
+    if len(tokens) < 4:
+        print("WARNING: bad line:", line, file=sys.stderr)
+        return
     stall, uop, pc, n, *rest = tokens
     hist[pc] += int(n)
 
