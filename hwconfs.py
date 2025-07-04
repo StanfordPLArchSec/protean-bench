@@ -12,7 +12,7 @@ core_hwconfs = {
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix"],
     },
     "tpt": {
-        "sim": "tpt",
+        "sim": "tpt-pages2",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
@@ -85,6 +85,13 @@ def addon_naive(hwconf):
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'naive'")
 
+def addon_pages(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt") or sim.startswith("tpe"):
+        hwconf["script_opts"] += ["--ptex-pages"]
+    else:
+        raise ValueError(f"simulator '{sim}' inhwconf not compatible with addon 'pages'")
+    
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -97,6 +104,7 @@ g_addons = {
     "noshadow": addon_noshadow,
     "shadowmem": addon_shadowmem,
     "naive": addon_naive,
+    "pages": addon_pages,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
