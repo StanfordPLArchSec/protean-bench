@@ -1,3 +1,3 @@
 bingroups = {
-    "main": ["base", "sni"],
+    "main": ["base", "cts", "ct", "nct"],
 }
