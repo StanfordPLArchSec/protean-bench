@@ -3,31 +3,25 @@ import os
 
 ptex = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
+base_cflags = ["-mno-avx"]
+
+def make_compiler(name, flags):
+    src = f"../llvm/{name}-17"
+    bin = f"{src}/build"
+    return {
+        # ../llvm/name-17/build
+        "src": src,
+        "bin": bin,
+        "cflags": ["-mno-avx"] + flags,
+        "fflags": ["-mno-avx"] + flags,
+    }
+                  
+
 core_compilers = {
-    "base": {
-        "src": "../llvm/base-17",
-        "bin": "../llvm/base-17/build",
-        "cflags": ["-mno-avx"],
-        "fflags": ["-mno-avx"],
-    },
-    "slh": {
-        "src": "../llvm/base-17",
-        "bin": "../llvm/base-17/build",
-        "cflags": ["-mno-avx", "-mllvm", "-x86-speculative-load-hardening"],
-        "fflags": ["-mno-avx", "-mllvm", "-x86-speculative-load-hardening"],
-    },
-    "sni": {
-        "src": "../llvm/ptex-17",
-        "bin": "../llvm/ptex-17/build",
-        "cflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
-        "fflags": ["-mno-avx", "-mllvm", "-x86-ptex=sni"],
-    },
-    "declassiflow": {
-        "src": "../llvm/ptex-17",
-        "bin": "../llvm/ptex-17/build",
-        "cflags": ["-mno-avx", f"-fpass-plugin={ptex}/declassiflow/build/lib/libdeclassiflow.so"],
-        "fflags": ["-mno-avx", f"-fpass-plugin={ptex}/declassiflow/build/lib/libdeclassiflow.so"],
-    },
+    "base": make_compiler("base", []),
+    "ct": make_compiler("ptex", ["-mllvm", "-x86-ptex=ct"]),
+    "cts": make_compiler("ptex", ["-mllvm", "-x86-ptex=cts"]),
+    "nct": make_compiler("ptex", ["-mllvm", "-x86-ptex=nct"]),
 }
 
 g_addons = {
