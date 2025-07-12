@@ -40,7 +40,7 @@ def get_cpu2017_int():
     exchange2 = make_bench("648.exchange2_s").add_input("6", runtime = "02:00:00")
 
     xz = make_bench("657.xz_s")
-    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "04:00:00", host_mem = "36GiB", resume_mem = "8GiB")
+    xz.add_input("cpu2006docs.tar.xz 6643 055ce243071129412e9dd0b3b69a21654033a9b723d874b2015c774fac1553d9713be561ca86f74e4f16f22e664fc17a79f30caa5ad2c04fbc447549c2810fae 1036078272 1111795472 4", mem_size = "32GiB", runtime = "04:00:00", host_mem = "36GiB", resume_mem = "16GiB")
     xz.add_input("cld.tar.xz 1400 19cf30ae51eddcbefda78dd06014b4b96281456e078ca7c13e1c0c9e6aaea8dff3efb4ad6b0456697718cede6bd5454852652806a657bb56e07d61128434b474 536995164 539938872 8", mem_size = "8GiB")
 
 
@@ -86,8 +86,11 @@ def compile_mem(wildcards):
     d = {
         "602.gcc_s": "4GiB",
         "607.cactuBSSN_s": "2GiB",
+        "620.omnetpp_s": "2GiB",
         "621.wrf_s": "16GiB",
+        "623.xalancbmk_s": "2GiB",
         "628.pop2_s": "2GiB",
+        "641.leela_s": "2GiB",
     }
     return d.get(wildcards.bench, "1GiB")
 
