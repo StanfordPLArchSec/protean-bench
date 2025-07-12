@@ -12,7 +12,7 @@ core_hwconfs = {
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix"],
     },
     "tpt": {
-        "sim": "tpt-pages2",
+        "sim": "tpt",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
@@ -23,7 +23,7 @@ core_hwconfs = {
     },
     "tpe": {
         "sim": "tpe",
-        "gem5_opts": ["--debug-flag=TPE,TransmitterStalls"],
+        "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpe-reg", "--tpe-mem", "--tpe-xmit"],
     },
     "utrace": {
@@ -85,12 +85,19 @@ def addon_naive(hwconf):
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'naive'")
 
+def addon_ideal(hwconf):
+    sim = hwconf["sim"]
+    if sim.startswith("tpt"):
+        hwconf["script_opts"] += ["--tpt-mode=Ideal"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'ideal'")
+
 def addon_pages(hwconf):
     sim = hwconf["sim"]
     if sim.startswith("tpt") or sim.startswith("tpe"):
         hwconf["script_opts"] += ["--ptex-pages"]
     else:
-        raise ValueError(f"simulator '{sim}' inhwconf not compatible with addon 'pages'")
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'pages'")
     
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
@@ -105,6 +112,7 @@ g_addons = {
     "shadowmem": addon_shadowmem,
     "naive": addon_naive,
     "pages": addon_pages,
+    "ideal": addon_ideal,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
