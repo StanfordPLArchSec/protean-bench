@@ -11,9 +11,19 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix"],
     },
+    "secure": {
+        "sim": "spt",
+        "gem5_opts": [],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1"],
+    },
     "tpt": {
         "sim": "tpt",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
+    },
+    "tpt-nopages": {
+        "sim": "tpt",
+        "gem5_opts": [],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
     "stt": {

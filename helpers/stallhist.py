@@ -13,6 +13,8 @@ hist = collections.defaultdict(int)
 
 def handle_line(line):
     tokens = line.strip().split()
+    if len(tokens) == 0:
+        return
     if tokens[0] != 'STALL:':
         return
     if args.regex and not args.regex.search(line):
