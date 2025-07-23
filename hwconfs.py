@@ -1,4 +1,5 @@
 import copy
+import re
 
 core_hwconfs = {
     "unsafe": {
@@ -29,7 +30,7 @@ core_hwconfs = {
     "tpt-pred": {
         "sim": "tpt-pred",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-acc", "--tpt-xmit", "--tpt-mode=Predict", f"--tpt-pred={1024 * 1024}"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-acc", "--tpt-xmit", "--tpt-mode=Predict", f"--tpt-pred={1024}"],
     },
     "stt": {
         "sim": "stt",
@@ -116,6 +117,9 @@ def addon_rs(hwconf):
 def addon_queue(hwconf):
     hwconf["script_opts"] += ["--tpt-queue"]
 
+def addon_predsize(hwconf, n):
+    hwconf["script_opts"] += [f"--tpt-pred={n}"]
+
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -132,6 +136,7 @@ g_addons = {
     "rs": addon_rs,
     "queue": addon_queue,
     "ideal": addon_ideal,
+    r"pred(\d+)": addon_predsize,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
@@ -139,5 +144,8 @@ def get_hwconf(name):
     core, *addons = name.split(".")
     hwconf = copy.deepcopy(core_hwconfs[core])
     for addon in addons:
-        g_addons[addon](hwconf)
+        for addon_re, addon_fn in g_addons.items():
+            if m := re.match(addon_re, addon):
+                addon_fn(hwconf, *m.groups())
+                break
     return hwconf
