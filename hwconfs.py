@@ -32,6 +32,11 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-acc", "--tpt-xmit", "--tpt-mode=Predict", f"--tpt-pred={1024}"],
     },
+    "tpt-real": {
+        "sim": "tpt-real",
+        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--mieros", "--mieros-imp", "--mieros-acc", "--mieros-xmit", "--mieros-mode=Predict", "--mieros-pred=1024"],
+    },
     "stt": {
         "sim": "stt",
         "gem5_opts": [],
