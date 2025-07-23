@@ -26,6 +26,11 @@ core_hwconfs = {
         "gem5_opts": [],
         "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
     },
+    "tpt-pred": {
+        "sim": "tpt-pred",
+        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-acc", "--tpt-xmit", "--tpt-mode=Predict", f"--tpt-pred={1024 * 1024}"],
+    },
     "stt": {
         "sim": "stt",
         "gem5_opts": [],
@@ -96,11 +101,7 @@ def addon_naive(hwconf):
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'naive'")
 
 def addon_ideal(hwconf):
-    sim = hwconf["sim"]
-    if sim.startswith("tpt"):
-        hwconf["script_opts"] += ["--tpt-mode=Ideal"]
-    else:
-        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'ideal'")
+    hwconf["script_opts"] += ["--tpt-mode=Ideal"]
 
 def addon_pages(hwconf):
     sim = hwconf["sim"]
@@ -122,6 +123,8 @@ g_addons = {
     "shadowmem": addon_shadowmem,
     "naive": addon_naive,
     "pages": addon_pages,
+    "rs": addon_rs,
+    "queue": addon_queue,
     "ideal": addon_ideal,
 }
 
