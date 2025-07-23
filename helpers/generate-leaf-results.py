@@ -90,11 +90,22 @@ results = {
 dbgout_path = os.path.join(os.path.dirname(args.stats), "dbgout.txt.gz")
 if os.path.isfile(dbgout_path):
     stalls = 0
+    access_preds = 0
+    access_misps = 0
     with gzip.open(dbgout_path, "rt") as f:
         for line in f:
             if line.startswith("STALL:"):
                 stalls += int(line.split()[3])
+            if line.startswith("TPT pred-"):
+                pred, real, prot = line.split()[1].split("-")[1]
+                if prot == "u":
+                    access_preds += 1
+                    if pred != real:
+                        access_misps += 1
     results["stats"]["stalls"] = stalls
+    results["stats"]["access-preds"] = access_preds
+    results["stats"]["access-misps"] = access_misps
+    results["stats"]["access-misp-rate"] = access_misps / access_preds if access_preds != 0 else 0
 
 if "unprot-regs" in results["stats"]:
     results["stats"]["unprot-regs-inst"] = results["stats"]["unprot-regs"] / results["stats"]["insts"]
