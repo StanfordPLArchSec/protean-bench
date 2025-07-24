@@ -37,6 +37,16 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--mieros", "--mieros-imp", "--mieros-acc", "--mieros-xmit", "--mieros-mode=Predict", "--mieros-pred=1024"],
     },
+    "mieros-track": {
+        "sim": "mieros",
+        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--mieros=Track", "--mieros-pred-mode=Predict", "--mieros-pred-size=1024"],
+    },
+    "mieros-delay": {
+        "sim": "mieros",
+        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--mieros=Delay"],
+    },
     "stt": {
         "sim": "stt",
         "gem5_opts": [],
@@ -125,6 +135,9 @@ def addon_queue(hwconf):
 def addon_predsize(hwconf, n):
     hwconf["script_opts"] += [f"--tpt-pred={n}"]
 
+def addon_delayopt(hwconf):
+    hwconf["script_opts"] += [f"--mieros-delay-opt"]
+
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -142,6 +155,7 @@ g_addons = {
     "queue": addon_queue,
     "ideal": addon_ideal,
     r"pred(\d+)": addon_predsize,
+    "delayopt": addon_delayopt,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
