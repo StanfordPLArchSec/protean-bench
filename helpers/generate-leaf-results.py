@@ -53,6 +53,7 @@ stats = {
     'system.switch_cpus.commit.xmitTaints': Stat('xmit-taints'),
     'system.switch_cpus.commit.protRegs': Stat('prot-regs'),
     'system.switch_cpus.commit.unprotRegs': Stat('unprot-regs'),
+    'system.switch_cpus.commitStats0.numLoadInsts': Stat('loads'),
 }
 # stats = dict(map(lambda x: (x.name(), None), keys.values()))
 with open(args.stats) as f:
@@ -85,6 +86,9 @@ results = {
     'simpoint': simpoint.__dict__,
     'stats': get_stats_dict(stats),
 }
+
+# Composite stats.
+results['stats']['load-rate'] = results['stats']['loads'] / results['stats']['insts']
 
 # HACK: Compute transmitter stalls.
 dbgout_path = os.path.join(os.path.dirname(args.stats), "dbgout.txt.gz")
