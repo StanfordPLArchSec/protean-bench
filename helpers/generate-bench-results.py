@@ -9,6 +9,7 @@ import collections
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--output', required = True, help = '(Output) Path to aggregated output JSON')
+parser.add_argument('--strict', action='store_true')
 parser.add_argument('inputs', nargs = '+', help = '(Input) Result JSONs for individual SimPoint runs')
 args = parser.parse_args()
 
@@ -22,7 +23,7 @@ for path in args.inputs:
 
 # Get keys.
 assert len(inputs) > 0
-keys = inputs[0]['stats'].keys()
+keys = set(inputs[0]['stats'].keys())
 for i, input in enumerate(inputs):
     if input['stats'].keys() != keys:
         print(f'found mismatch in results keys at index {i}!', file = sys.stderr)
@@ -32,7 +33,9 @@ for i, input in enumerate(inputs):
             print(f'only in 0: {key}', file = sys.stderr)
         for key in b - a:
             print(f'only in {i}: {key}', file = sys.stderr)
-        exit(1)
+        if args.strict:
+            exit(1)
+        keys &= set(input['stats'].keys())
 
 total_stats = dict(map(lambda key: (key, 0), keys))
 total_weights = collections.defaultdict(int)
