@@ -1,0 +1,3 @@
+scons
+snakemake
+snakemake-executor-plugin-slurm
