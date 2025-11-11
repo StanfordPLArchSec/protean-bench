@@ -9,7 +9,8 @@ rule clone_transientfail:
     shell:
         "rm -rf {output} && "
         "git clone {params.git_url} {output} && "
-        "find {output} -name Makefile | xargs -n1 sed -i 's|gcc|{params.clang}|g' && "
+        "find {output} -name Makefile | xargs -n1 sed -i 's|gcc|$(CC) $(CFLAGS)|g' && "
+        "find {output} -name Makefile | xargs -n1 sed -i 's|g++|$(CXX) $(CFLAGS)|g' && "
         "sed -i 's|#include <seccomp.h>||g' {output}/pocs/spectre/STL/main.c"
 
 def transientfail_stem(w):
@@ -28,14 +29,21 @@ def transientfail_orig_exe(w):
         
 rule build_transientfail:
     input:
-        "transientfail/{bin}/src"
+        src = "transientfail/{bin}/src",
+        clang = lambda w: get_compiler(w.bin)["bin"] + "/bin/clang",
+        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     output:
         "transientfail/{bin}/{spec}/{mode}/exe"
     params:
         make = transientfail_make_target,
         orig_exe = transientfail_orig_exe,
+        cflags = get_cflags,
+        ldflags = lambda w: expand("-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath {llvm}/lib)", bin=w.bin, llvm=get_compiler(w.bin)["bin"]),        
     shell:
-        'make -C {input}/pocs {params.make} && cp {params.orig_exe} {output}'
+        "export CC=$(realpath {input.clang}) && "
+        "export CXX=$(realpath {input.clang}++) && "
+        'export CFLAGS="{params.cflags} {params.ldflags}" && '
+        "make -C {input.src}/pocs {params.make} && cp {params.orig_exe} {output}"
 
 rule run_transientfail:
     input:

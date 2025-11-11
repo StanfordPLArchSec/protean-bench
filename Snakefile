@@ -3,7 +3,7 @@ import sys
 import json
 
 import bench
-from compilers import get_compiler, is_compiler
+from compilers import get_compiler, get_cflags, is_compiler, get_clang
 from hwconfs import get_hwconf
 
 container: "ptex.sif"
@@ -373,3 +373,13 @@ use rule _pincpu as validate_checkpoints_kvm with:
         script_args = "--results-json={bench}/cpt/{input}/{bingroup}/{bin}/validate.json --checkpoint-dir={bench}/cpt/{input}/{bingroup}/{bin}/cpt"
 
 include: "rules/unique_leak.smk"
+include: "rules/wasm-cpu2017.smk"
+include: "rules/wasm-cpu2006.smk"
+include: "rules/libsodium.smk"
+include: "rules/openssl.smk"
+include: "rules/hacl.smk"
+include: "rules/ctsbench.smk"
+include: "rules/nctbench.smk"
+include: "rules/nginx.smk"
+include: "rules/webserv.smk"
+include: "rules/transientfail.smk"

@@ -2,12 +2,6 @@ from bench import make_bench
 
 make_bench("bearssl").add_input("chacha20_ct")
 
-def get_cflags(w):
-    cflags = get_compiler(w.bin)["cflags"] + ["-O2", "-g"]
-    if w.bin == "sni":
-        cflags.extend(["-mllvm", "--x86-ptex-flags"])
-    return cflags
-
 rule clone_bearssl:
     input:
         clang = lambda w: get_compiler(w.bin)["bin"] + "/bin/clang",

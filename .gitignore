@@ -2,3 +2,7 @@
 /libraries/
 /6[0-9][0-9].*_s/
 *~
+/wasm.*/
+/m5out.*/
+m5out
+__pycache__/

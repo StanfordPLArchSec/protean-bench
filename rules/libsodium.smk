@@ -1,6 +1,4 @@
 rule clone_libsodium:
-    input:
-        libc = "libraries/{bin}/libc/projects/libc/lib/libllvmlibc.a",
     output:
         directory("libraries/{bin}/libsodium/src")
     params:
@@ -18,13 +16,19 @@ rule configure_libsodium:
         root = lambda w: expand("libraries/{bin}/libsodium", bin=w.bin),
         cflags = get_cflags,
         ldflags = lambda w: expand("-static -Wl,--allow-multiple-definition -fuse-ld=lld -lm -L$(realpath libraries/{bin}/libc/projects/libc/lib) -lllvmlibc -L$(realpath {llvm}/lib)", bin=w.bin, llvm=get_compiler(w.bin)["bin"]),
-        build = lambda w: expand("libraries/{bin}/libsodium/build", bin=w.bin),
     shell:
         'export LDFLAGS="{params.ldflags}" && '
         'export CFLAGS="{params.cflags}" && '
         'export CC=$(realpath {input.clang}) && '
         'PREFIX=$(realpath {params.root}) && '
         'rm -rf {output} && mkdir -p {output} && cd {output} && '
-        '../src/configure --prefix=$PREFIX'
+        '../src/configure --prefix=$PREFIX --disable-asm'
 
-        
+rule build_libsodium:
+    input:
+        "libraries/{bin}/libsodium/build"
+    output:
+        "libraries/{bin}/libsodium/lib/libsodium.a"
+    shell:
+        'make -C {input} -j$(nproc) && '
+        'make -C {input} -j$(nproc) install'

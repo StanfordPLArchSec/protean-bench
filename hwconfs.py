@@ -138,6 +138,9 @@ def addon_predsize(hwconf, n):
 def addon_delayopt(hwconf):
     hwconf["script_opts"] += [f"--mieros-delay-opt"]
 
+def addon_se(hwconf):
+    hwconf["sim"] += "-se"
+    
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -156,6 +159,7 @@ g_addons = {
     "ideal": addon_ideal,
     r"pred(\d+)": addon_predsize,
     "delayopt": addon_delayopt,
+    "se": addon_se,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().

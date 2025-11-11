@@ -6,12 +6,13 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("bench", nargs="+")
+parser.add_argument("--group", "-g", default="main")
 args = parser.parse_args()
 
 data = []
 for bench in args.bench:
     try:
-        with open(f"{bench}/exp/0/main/base/unsafe.pcore/results.json") as f:
+        with open(f"{bench}/exp/0/{args.group}/base/unsafe.pcore/results.json") as f:
             j = json.load(f)
     except FileNotFoundError as e:
         print(f'WARN: {bench} missing file', file=sys.stderr)
