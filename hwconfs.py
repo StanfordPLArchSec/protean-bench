@@ -10,57 +10,27 @@ core_hwconfs = {
     "spt": {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending"],
     },
     "secure": {
         "sim": "spt",
         "gem5_opts": [],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1", "--spt-bugfix-pending"],
     },
-    "tpt": {
-        "sim": "tpt",
+    "protean-track": {
+        "sim": "protean",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--protean=Track", "--protean-pred-mode=Predict", "--protean-pred-size=1024"],
     },
-    "tpt-nopages": {
-        "sim": "tpt",
-        "gem5_opts": [],
-        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-reg", "--tpt-mem", "--tpt-xmit", "--tpt-mode=YRoT"],
-    },
-    "tpt-pred": {
-        "sim": "tpt-pred",
+    "protean-delay": {
+        "sim": "protean",
         "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--tpt", "--implicit-channel=Lazy", "--tpt-acc", "--tpt-xmit", "--tpt-mode=Predict", f"--tpt-pred={1024}"],
-    },
-    "tpt-real": {
-        "sim": "tpt-real",
-        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--mieros", "--mieros-imp", "--mieros-acc", "--mieros-xmit", "--mieros-mode=Predict", "--mieros-pred=1024"],
-    },
-    "mieros-track": {
-        "sim": "mieros",
-        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--mieros=Track", "--mieros-pred-mode=Predict", "--mieros-pred-size=1024"],
-    },
-    "mieros-delay": {
-        "sim": "mieros",
-        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--mieros=Delay"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--protean=Delay"],
     },
     "stt": {
         "sim": "stt",
         "gem5_opts": [],
-        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy"],
-    },
-    "tpe": {
-        "sim": "tpe",
-        "gem5_opts": ["--debug-flag=TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--tpe-reg", "--tpe-mem", "--tpe-xmit"],
-    },
-    "utrace": {
-        "sim": "utrace",
-        "gem5_opts": ["--debug-flag=uTrace"],
-        "script_opts": ["--ruby", "--enable-prefetch"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy", "--stt-bugfix-store", "--stt-bugfix-pending"],
     },
 }
 
@@ -93,7 +63,7 @@ def addon_eager(hwconf):
 
 def addon_noshadow(hwconf):
     sim = hwconf["sim"]
-    if sim.startswith("tpt"):
+    if sim.startswith("tpt") or sim.startswith("protean"):
         hwconf["script_opts"] += ["--ptex-mem=None"]
     elif sim.startswith("spt"):
         hwconf["script_opts"] += ["--enableShadowL1=0"]
@@ -102,42 +72,37 @@ def addon_noshadow(hwconf):
 
 def addon_shadowmem(hwconf):
     sim = hwconf["sim"]
-    if sim.startswith("tpt"):
+    if sim.startswith("tpt") or sim.startswith("protean"):
         hwconf["script_opts"] += ["--ptex-mem=ShadowMem"]
     elif sim.startswith("spt"):
         hwconf["script_opts"] += ["--bottomlessShadowL1=1"]
     else:
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'shadowmem'")
-    
-def addon_naive(hwconf):
-    sim = hwconf["sim"]
-    if sim.startswith("tpt"):
-        hwconf["script_opts"] += ["--tpt-mode=Naive"]
-    else:
-        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'naive'")
-
-def addon_ideal(hwconf):
-    hwconf["script_opts"] += ["--tpt-mode=Ideal"]
-
-def addon_pages(hwconf):
-    sim = hwconf["sim"]
-    if sim.startswith("tpt") or sim.startswith("tpe"):
-        hwconf["script_opts"] += ["--ptex-pages"]
-    else:
-        raise ValueError(f"simulator '{sim}' inhwconf not compatible with addon 'pages'")
 
 def addon_rs(hwconf):
     hwconf["script_opts"] += ["--spt-bugfix-rs"]
 
-def addon_queue(hwconf):
-    hwconf["script_opts"] += ["--tpt-queue"]
-
 def addon_predsize(hwconf, n):
-    hwconf["script_opts"] += [f"--tpt-pred={n}"]
+    hwconf["script_opts"] += [f"--protean-pred-size={n}"]
 
 def addon_delayopt(hwconf):
-    hwconf["script_opts"] += [f"--mieros-delay-opt"]
+    hwconf["script_opts"] += [f"--protean-delay-opt"]
 
+def addon_access(hwconf):
+    if "--protean=Track" in hwconf["script_opts"]:
+        hwconf["script_opts"] += ["--protean-pred-mode=Protected"]
+    elif "--protean=Delay" in hwconf["script_opts"]:
+        hwconf["script_opts"] += ["--protean-delay-all"]
+    else:
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'access'")
+
+def addon_unprot(hwconf):
+    if "--protean=Track" in hwconf["script_opts"]:
+        hwconf["script_opts"] += ["--protean-pred-mode=Unprotected"]
+    else:
+        sim = hwconf["sim"]
+        raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'unprot'")
+    
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
     "atret": lambda hwconf: addon_speculation_model(hwconf, "AtRet"),
@@ -149,13 +114,10 @@ g_addons = {
     "eager": addon_eager,
     "noshadow": addon_noshadow,
     "shadowmem": addon_shadowmem,
-    "naive": addon_naive,
-    "pages": addon_pages,
-    "rs": addon_rs,
-    "queue": addon_queue,
-    "ideal": addon_ideal,
     r"pred(\d+)": addon_predsize,
     "delayopt": addon_delayopt,
+    "access": addon_access,
+    "unprot": addon_unprot,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().
@@ -163,8 +125,13 @@ def get_hwconf(name):
     core, *addons = name.split(".")
     hwconf = copy.deepcopy(core_hwconfs[core])
     for addon in addons:
+        ok = False
         for addon_re, addon_fn in g_addons.items():
+            assert not ok
             if m := re.match(addon_re, addon):
                 addon_fn(hwconf, *m.groups())
+                ok = True
                 break
+        if not ok:
+            raise ValueError(f"ERROR: unhandled addon '{addon}'")
     return hwconf
