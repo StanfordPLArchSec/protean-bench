@@ -12,19 +12,19 @@ core_hwconfs = {
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending"],
     },
-    "secure": {
+    "sptsb": {
         "sim": "spt",
-        "gem5_opts": [],
+        "gem5_opts": ["--debug-flag=SPTRetire,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1", "--spt-bugfix-pending"],
     },
-    "protean-track": {
+    "prottrack": {
         "sim": "protean",
-        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "gem5_opts": ["--debug-flag=Protean,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--protean=Track", "--protean-pred-mode=Predict", "--protean-pred-size=1024"],
     },
-    "protean-delay": {
+    "protdelay": {
         "sim": "protean",
-        "gem5_opts": ["--debug-flag=TPT,TransmitterStalls"],
+        "gem5_opts": ["--debug-flag=Protean,ProteanRetire,TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--protean=Delay"],
     },
     "stt": {
@@ -128,7 +128,7 @@ def get_hwconf(name):
         ok = False
         for addon_re, addon_fn in g_addons.items():
             assert not ok
-            if m := re.match(addon_re, addon):
+            if m := re.fullmatch(addon_re, addon):
                 addon_fn(hwconf, *m.groups())
                 ok = True
                 break

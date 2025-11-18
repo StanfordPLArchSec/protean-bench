@@ -6,6 +6,9 @@ import bench
 from compilers import get_compiler, is_compiler
 from hwconfs import get_hwconf
 
+config_compile = int(config.get("compile", "0"))
+config_checkpoint = int(config.get("checkpoint", "0"))
+
 container: "ptex.sif"
 
 # TODO: Move these to config file?
@@ -20,11 +23,6 @@ addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
 
 # TODO: Investigate why partial build of libc doesn't work.
 
-sim_gem5_opts = {
-    "tpt": [ "--debug-flag=TPT,TransmitterStalls"],
-    "spt-ptex": ["--debug-flag=PTeX"],
-}
-
 warmup = 10000000
 interval = 50000000
 simpoint_exe = "../simpoint/bin/simpoint"
@@ -33,17 +31,19 @@ num_simpoints = 10
 # TODO: Create a base rule from which to inherit that depend on the compiler like this.
 # TODO: Make builds quiet.
 
-include: "rules/compile.smk"
-include: "rules/libc.smk"
-include: "rules/libcxx.smk"
-include: "rules/openmp.smk"
-include: "rules/cpu2017.smk"
-include: "rules/bearssl.smk"
-include: "rules/ctaes.smk"
-include: "rules/djbsort.smk"
-include: "rules/host.smk"
-include: "rules/kvm.smk"
-include: "rules/parsec.smk"
+from rules.cpu2017 import *
+if config_compile:
+    include: "rules/compile.smk"
+    include: "rules/libc.smk"
+    include: "rules/libcxx.smk"
+    include: "rules/openmp.smk"
+    include: "rules/cpu2017.smk"
+    include: "rules/bearssl.smk"
+    include: "rules/ctaes.smk"
+    include: "rules/djbsort.smk"
+    include: "rules/host.smk"
+    include: "rules/kvm.smk"
+    include: "rules/parsec.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.
@@ -230,30 +230,34 @@ rule simpoints_json:
     shell:
         "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
 
-checkpoint checkpoint:
-    input:
-        **rules._pincpu.input,
-        simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
-        waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
-        script = gem5_pin_configs + "/pin-cpt.py",
-    output:
-        **rules._pincpu.output,
-        cptdir = directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt"),
-    threads: 1
-    params:
-        **rules._pincpu.params,
-        outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
-        script_args = lambda wildcards, input: f"--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt}"
-    threads: 1
-    resources:
-        **rules._pincpu.rule.resources
-    shell:
-        rules._pincpu.rule.shellcmd
+if config_checkpoint:
+    checkpoint checkpoint:
+        input:
+            **rules._pincpu.input,
+            simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json",
+            waypoints_txt = "{bench}/cpt/{input}/{bingroup}/{bin}/waypoints.txt",
+            script = gem5_pin_configs + "/pin-cpt.py",
+        output:
+            **rules._pincpu.output,
+            cptdir = directory("{bench}/cpt/{input}/{bingroup}/{bin}/cpt"),
+        threads: 1
+        params:
+            **rules._pincpu.params,
+            outdir = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt", # TODO: duplicate of outdir
+            script_args = lambda wildcards, input: f"--simpoints-json={input.simpoints_json} --waypoints={input.waypoints_txt}"
+        threads: 1
+        resources:
+            **rules._pincpu.rule.resources
+        shell:
+            rules._pincpu.rule.shellcmd
 
 def get_checkpoint(wildcards):
-    checkpoint_output = checkpoints.checkpoint.get(**wildcards)
+    if config_checkpoint:
+        checkpoint_output = checkpoints.checkpoint.get(**wildcards).output
+    else:
+        checkpoint_output = "{bench}/cpt/{input}/{bingroup}/{bin}/cpt"
     return expand("{dir}/cpt.{cptid}/{filename}",
-                  dir = checkpoint_output.output,
+                  dir = checkpoint_output,
                   cptid = wildcards.cptid,
                   filename = [
                       "m5.cpt",
@@ -284,7 +288,7 @@ rule resume_from_checkpoint:
     resources:
         # mem = rules._pincpu.rule.resources["mem"], # TODO: Shouldn't inherit directly from PinCPU.
         mem = lambda w: get_input(w).resume_mem, # TODO: Might need to be able to tweak this depending on the checkpoint.
-        runtime = "12h", # TODO: Consider making this dynamic.
+        runtime = "1d", # TODO: Consider making this dynamic.
         cpus_per_task = 1,
     shell:
         "if [ -d {params.outdir} ]; then rm -r {params.outdir}; fi && "
@@ -316,7 +320,8 @@ rule checkpoint_results:
 def get_simpoints_json(wildcards):
     # Make sure we've executed the checkpoint.
     # This should ensure that simpoints.json is available, right?
-    checkpoints.checkpoint.get(**wildcards) 
+    if config_checkpoint:
+        checkpoints.checkpoint.get(**wildcards)
     simpoints_json = expand("{bench}/cpt/{input}/{bingroup}/simpoints.json", **wildcards)
     assert len(simpoints_json) == 1
     simpoints_json = simpoints_json[0]
