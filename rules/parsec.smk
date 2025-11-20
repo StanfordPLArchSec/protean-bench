@@ -207,7 +207,7 @@ rule run_parsec:
         env_script_opts = lambda w: get_parsec_bench(w.benchdir, w.bench).get_env_script_opts(),
     threads: 1
     resources:
-        runtime = "5d",
+        runtime = "7d",
         mem = lambda w: get_parsec_bench(w.benchdir, w.bench).host_mem(),
         cpus_per_task = 1,
     shell:
