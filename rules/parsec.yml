@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+dependencies:
+  - automake
+  - autoconf
+  - m4
+  - perl
+  - gettext
