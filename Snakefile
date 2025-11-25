@@ -3,11 +3,11 @@ import sys
 import json
 
 import bench
-from compilers import get_compiler, is_compiler
+from compilers import get_compiler, is_compiler, get_clang
 from hwconfs import get_hwconf
 
-config_compile = int(config.get("compile", "0"))
-config_checkpoint = int(config.get("checkpoint", "0"))
+config_compile = int(config.get("compile", "1"))
+config_checkpoint = int(config.get("checkpoint", "1"))
 
 container: "ptex.sif"
 
@@ -44,6 +44,12 @@ if config_compile:
     include: "rules/host.smk"
     include: "rules/kvm.smk"
     include: "rules/parsec.smk"
+    include: "rules/ctsbench.smk"
+    include: "rules/openssl.smk"
+    include: "rules/libsodium.smk"
+    include: "rules/hacl.smk"
+
+include: "rules/disasm.smk"
 
 # TODO: This is not actually dependent on the bingroup. Should relocate this accordingly.
 # Only the shared results should be for the bingroups.

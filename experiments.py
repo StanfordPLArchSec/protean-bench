@@ -4,6 +4,7 @@ import itertools
 import collections
 import argparse
 import os
+import re
 
 # Named experiments for HPCA'26 submission.
 
@@ -27,12 +28,12 @@ benches_spec_fp = [
     "607.cactuBSSN_s",
     "619.lbm_s",
     "621.wrf_s",
-    "627.cam4_s",
+    # "627.cam4_s",
     "628.pop2_s",
     "638.imagick_s",
     "644.nab_s",
     "649.fotonik3d_s",
-    "654.roms_s",
+    # "654.roms_s",
 ]
 
 main_confs = ["base/unsafe"]
@@ -69,17 +70,17 @@ for bench in benches_spec_int:
 # Experiment: PARSEC.
 benches_parsec = [
     "apps/blackscholes",
-    "apps/facesim",
+    # "apps/facesim",
     "apps/ferret",
     "apps/fluidanimate",
-    "apps/freqmine",
-    "apps/raytrace",
+    # "apps/freqmine",
+    # "apps/raytrace",
     "apps/swaptions",
-    "apps/vips",
-    "apps/x264",
+    # "apps/vips",
+    # "apps/x264",
     "kernels/canneal",
     "kernels/dedup",
-    "kernels/streamcluster",
+    # "kernels/streamcluster",
 ]
 for bench in benches_parsec:
     for conf in main_confs:
@@ -134,6 +135,31 @@ for bench in benches_spec_int:
         experiments["access"].append(
             f"{bench}/exp/0/main/{conf}.pcore/results.json")
 
+# Experiment: ctbench
+for bench in ["bearssl", "ctaes", "djbsort"]:
+    confs = ["base/unsafe"]
+    for conf in ["base/spt", "ct/prottrack", "ct/protdelay"]:
+        confs.append(f"{conf}.atret")
+    for conf in confs:
+        experiments["ctbench"].append(
+            f"{bench}/exp/0/ctbench/{conf}.pcore/results.json")
+
+# Experiment: ctsbench
+for bench in ["ctsbench.libsodium.salsa20",
+              "ctsbench.libsodium.sha256",
+              "ctsbench.openssl.chacha20",
+              "ctsbench.openssl.sha256",
+              "ctsbench.openssl.curve25519",
+              "ctsbench.hacl.chacha20",
+              "ctsbench.hacl.curve25519",
+              "ctsbench.hacl.poly1305"]:
+    confs = ["base/unsafe"]
+    for conf in ["base/spt", "cts/prottrack", "cts/protdelay"]:
+        confs.append(f"{conf}.atret")
+    for conf in confs:
+        experiments["ctsbench"].append(
+            f"{bench}/exp/0/ctsbench/{conf}.pcore/results.json")
+
 def main():
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest="cmd", required=True)
@@ -142,7 +168,6 @@ def main():
     subparser_run.add_argument(
         "--exp", action="append", choices=experiments.keys())
     subparser_run.add_argument("--dry-run", "-n", action="store_true")
-    subparser_run.add_argument("--list", "-l", action="store_true")
     subparser_run.add_argument("snakemake_command", nargs="+")
     args = parser.parse_args()
 

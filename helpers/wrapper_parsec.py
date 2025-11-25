@@ -12,7 +12,7 @@ args = parser.parse_args()
 cmd = [*args.snakemake_cmd]
 benches = [
     "apps/blackscholes",
-    "apps/bodytrack",
+    # "apps/bodytrack", # NOTE: Disabled due to bug: executes unmapped address.
     "apps/facesim",
     "apps/ferret",
     "apps/fluidanimate",

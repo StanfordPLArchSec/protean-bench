@@ -19,6 +19,8 @@ def handle_line(line):
         return
     if args.regex and not args.regex.search(line):
         return
+    if len(tokens) < 4:
+        return
     stall, uop, pc, n, *rest = tokens
     hist[pc] += int(n)
 

@@ -10,12 +10,19 @@ core_hwconfs = {
     "spt": {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending",
+                        "--moreTransmitInsts=3"],
+    },
+    "spt2": {
+        "sim": "spt",
+        "gem5_opts": ["--debug-flag=TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending",
+                        "--moreTransmitInsts=3", "--spt-bugfix-rename"],
     },
     "sptsb": {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=SPTRetire,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1", "--spt-bugfix-pending"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1", "--spt-bugfix-pending", "--moreTransmitInsts=3"],
     },
     "prottrack": {
         "sim": "protean",
@@ -30,7 +37,25 @@ core_hwconfs = {
     "stt": {
         "sim": "stt",
         "gem5_opts": [],
-        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy", "--stt-bugfix-store", "--stt-bugfix-pending"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy", "--stt-bugfix-store", "--stt-bugfix-pending",
+                        "--more-transmit-insts=3"],
+    },
+
+    # Buggy versions of prior defenses.
+    "sttbug": {
+        "sim": "stt",
+        "gem5_opts": [],
+        "script_opts": ["--ruby", "--enable-prefetch", "--stt", "--implicit-channel=Lazy"],
+    },
+    "sptbug": {
+        "sim": "spt",
+        "gem5_opts": ["--debug-flag=TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1"],
+    },
+    "sptsbbug": {
+        "sim": "spt",
+        "gem5_opts": ["--debug-flag=SPTRetire,TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--disableUntaint=1"],
     },
 }
 

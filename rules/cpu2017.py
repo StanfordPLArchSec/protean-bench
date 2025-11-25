@@ -75,7 +75,7 @@ def get_cpu2017_fp():
 
     fotonik3d = make_bench("649.fotonik3d_s").add_input(mem_size = "16GiB", runtime = "04:00:00", host_mem = "24GiB", resume_mem = "16GiB")
 
-    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "04:00:00", resume_mem = "12GiB")
+    roms = make_bench("654.roms_s").add_input(stdin = "ocean_benchmark3.in.x", mem_size = "16GiB", stack_size = "64MiB", runtime = "48:00:00", resume_mem = "12GiB")
     
 get_cpu2017_int()
 get_cpu2017_fp()

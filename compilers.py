@@ -62,3 +62,9 @@ def get_compiler(name):
         for key in ["cflags", "fflags"]:
             compiler[key].extend(extra_flags)
     return compiler
+
+def get_cflags(w):
+    return get_compiler(w.bin)["cflags"] + ["-O2", "-g"]
+
+def get_clang(w):
+    return get_compiler(w.bin)["bin"] + "/bin/clang" 

@@ -10,6 +10,8 @@ rule build_libcxx:
         llvm_runtimes_src = lambda w: get_compiler(w.bin)["src"] + "/runtimes",
         cflags = lambda w: get_compiler(w.bin)["cflags"],
     threads: 8
+    resources:
+        mem = "4GiB"         
     shell:
         "rm -rf {output.build} && "
         "cmake -S {params.llvm_runtimes_src} -B {output.build} -DCMAKE_BUILD_TYPE=RelWithDebInfo "

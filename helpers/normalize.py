@@ -27,5 +27,5 @@ for line in sys.stdin:
         elif isinstance(leader, str):
             outl.append("-")
         else:
-            outl.append(value / leader)
+            outl.append(f"{value/leader:.4f}")
     print(*outl)

@@ -12,7 +12,7 @@ rule stalls_checkpoint:
         weight = get_simpoint_weight,
         addr2line = addr2line,
     shell:
-        "gunzip < {input.dbgout_txt_gz} | {input.stallhist_script} | {input.addr2line_script} --exe={input.exe} --addr2line={params.addr2line} --field=1 --basename | awk '{{ printf \"%d %s\\n\", $1 * {params.weight}, $2 }}' > {output.stalls_txt}"
+        "gunzip < {input.dbgout_txt_gz} | {input.stallhist_script} | {input.addr2line_script} --exe={input.exe} --addr2line={params.addr2line} --field=1 --basename | awk '{{ printf \"%d %s %s\\n\", $1 * {params.weight}, $2, $3 }}' > {output.stalls_txt}"
 
 rule stalls_bench:
     input:
@@ -20,7 +20,7 @@ rule stalls_bench:
     output:
         stalls_txt = "{bench}/exp/{input}/{bingroup}/{bin}/{hwconf}/stalls.txt"
     shell:
-        "awk '{{ hist[$2] += $1 }} END {{ for (pc in hist) print hist[pc], pc}}' {input.stalls_txts} | sort -n -r > {output.stalls_txt}"
+        "awk '{{ hist[$2 \" \" $3] += $1 }} END {{ for (pc in hist) print hist[pc], pc}}' {input.stalls_txts} | sort -n -r > {output.stalls_txt}"
 
 
 

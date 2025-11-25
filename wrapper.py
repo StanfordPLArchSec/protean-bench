@@ -21,7 +21,8 @@ benches = set(args.bench)
 for suite in args.suite:
     benches.update(benchsuites[suite])
 for bench in args.skip_bench:
-    benches.remove(bench)
+    if bench in benches:
+        benches.remove(bench)
 # print("Running benchmarks:", " ".join(benches))
 
 # Then, get the full list of experiments.

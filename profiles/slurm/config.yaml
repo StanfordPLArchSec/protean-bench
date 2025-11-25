@@ -6,6 +6,6 @@ default-resources:
 jobs: 192
 executor: slurm
 use-apptainer: true
-apptainer-args: "--home /cafe/u/nmosier/ptex"
-# latency-wait: 10
+apptainer-args: "--home /cafe/u/nmosier"
+latency-wait: 60
 rerun-incomplete: true

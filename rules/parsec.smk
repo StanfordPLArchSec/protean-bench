@@ -69,7 +69,7 @@ benches = [
             'simlarge':  '-timing -threads 2',
         },
         mem = "8GiB",
-        host_mem = "128GiB",
+        host_mem = "16GiB",
     ),
     # WARN: May need to fix up thread count here (the number right before output.txt).
     # NOTE: Disabled due to crash. Apparent gem5 base bug (null pointer dereference).
@@ -100,7 +100,7 @@ benches = [
         name = 'raytrace',
         exe = 'rtview',
         run_args = {'simsmall': 'happy_buddha.obj -automove -nthreads 15 -frames 3 -res 480 270'},
-        host_mem = "16GiB",
+        host_mem = "8GiB",
     ),
     Benchmark(
         name = 'swaptions',
@@ -205,13 +205,14 @@ rule run_parsec:
         script_opts = lambda w: get_hwconf(w.hwconf)["script_opts"],
         bench_args = lambda w: get_parsec_bench(w.benchdir, w.bench).args(),
         env_script_opts = lambda w: get_parsec_bench(w.benchdir, w.bench).get_env_script_opts(),
+        debug_file = "/dev/null",
     threads: 1
     resources:
         runtime = "7d",
         mem = lambda w: get_parsec_bench(w.benchdir, w.bench).host_mem(),
         cpus_per_task = 1,
     shell:
-        "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} --debug-file=dbgout.txt.gz "
+        "{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} --debug-file={params.debug_file} "
         "{input.run_script} {params.script_opts} --chdir={params.rundir} "
         "-c {params.exe} --options='{params.bench_args}' {params.env_script_opts} && "
         "touch {output}"
