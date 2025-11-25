@@ -18,7 +18,7 @@ def get_srcloc(line: str) -> str:
     if len(symbol.FileName) == 0 or \
        symbol.Line == 0 or \
        symbol.Column == 0: # TODO: Maybe too strict?
-        return None
+        return f"{addr} {addr}"
     if args.basename:
         symbol.FileName = os.path.basename(symbol.FileName)
     return f"{addr} {symbol.FileName}:{symbol.Line}:{symbol.Column}"

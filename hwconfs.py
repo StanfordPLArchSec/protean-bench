@@ -127,6 +127,9 @@ def addon_unprot(hwconf):
     else:
         sim = hwconf["sim"]
         raise ValueError(f"simulator '{sim}' in hwconf not compatible with addon 'unprot'")
+
+def addon_se(hwconf):
+    hwconf["sim"] += "-se"
     
 g_addons = {
     "ctrl": lambda hwconf: addon_speculation_model(hwconf, "Ctrl"),
@@ -143,6 +146,7 @@ g_addons = {
     "delayopt": addon_delayopt,
     "access": addon_access,
     "unprot": addon_unprot,
+    "se": addon_se,
 }
 
 # TODO: Factor out common code with compilers.get_compiler().

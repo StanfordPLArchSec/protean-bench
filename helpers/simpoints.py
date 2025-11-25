@@ -34,6 +34,32 @@ for info in infos:
 
 # Number the simpoints.
 infos.sort(key = lambda d: d["interval"])
+
+# EXPERIMENTAL:
+# Coalesce back-to-back intervals.
+def coalesce(i):
+    if i >= len(infos) - 1:
+        return False
+    int1 = infos[i]
+    int2 = infos[i+1]
+    if int1["interval"] + 1 != int2["interval"]:
+        return False
+    # Can coalesce!
+    int1["weight"] += int2["weight"]
+    assert int1["waypoints"][2] == int2["waypoints"][1]
+    int1["waypoints"][2] = int2["waypoints"][2]
+    del infos[i+1]
+    return True
+
+# Try to coalesce.
+change = True
+while change:
+    change = False
+    for i in range(len(infos)):
+        if coalesce(i):
+            change = True
+            break
+
 for i, info in enumerate(infos):
     info["name"] = str(i)
 
