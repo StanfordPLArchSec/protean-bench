@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
-import json
 import argparse
+import json
+
 parser = argparse.ArgumentParser()
-parser.add_argument("simpoints_json", nargs="+")
-parser.add_argument("--verbose", "-v", action="store_true")
+parser.add_argument("--bench", "-b", required=True)
+parser.add_argument("--group", "-g", required=True)
 args = parser.parse_args()
 
-for path in args.simpoints_json:
-    with open(path) as f:
-        j = json.load(f)
-    x = max(j, key=lambda x: x["weight"])
-    name = x["name"]
-    if args.verbose:
-        print(path, name)
-    else:
-        print(name)
+path = f"{args.bench}/cpt/0/{args.group}/simpoints.json"
+with open(path) as f:
+    j = json.load(f)
+
+m = max(j, key=lambda x: x["weight"])
+print(m["name"])

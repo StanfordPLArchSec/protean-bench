@@ -6,3 +6,7 @@
 /m5out.*/
 m5out
 __pycache__/
+*.asm
+*.o
+*.log
+*.patch
