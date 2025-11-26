@@ -18,17 +18,22 @@ benchsuites = {
         "607.cactuBSSN_s",
         "619.lbm_s",
         "621.wrf_s",
-        "627.cam4_s",
+        # "627.cam4_s",
         "628.pop2_s",
         "638.imagick_s",
         "644.nab_s",
         "649.fotonik3d_s",
-        "654.roms_s",
+        # "654.roms_s",
     },
-    "crypto": {
+    "ctbench": {
         "bearssl",
         "ctaes",
         "djbsort",
+    },
+    "nctbench": {
+        "nctbench.openssl.dh",
+        "nctbench.openssl.bnexp",
+        "nctbench.openssl.ecadd",
     },
 }
 
