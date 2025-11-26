@@ -6,8 +6,24 @@ import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("exp", nargs="+")
-parser.add_argument("--bench", "-b", required=True, action="append")
+parser.add_argument("--bench", "-b", action="append")
 args = parser.parse_args()
+
+if not args.bench:
+    args.bench = [
+        "apps/blackscholes",
+        # "apps/facesim",
+        "apps/ferret",
+        "apps/fluidanimate",
+        # "apps/freqmine",
+        # "apps/raytrace",
+        "apps/swaptions",
+        # "apps/vips",
+        # "apps/x264",
+        "kernels/canneal",
+        "kernels/dedup",
+        # "kernels/streamcluster",
+    ]
 
 def get_sim_seconds(path):
     t = None
