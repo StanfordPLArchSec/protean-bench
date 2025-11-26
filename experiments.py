@@ -160,6 +160,17 @@ for bench in ["ctsbench.libsodium.salsa20",
         experiments["ctsbench"].append(
             f"{bench}/exp/0/ctsbench/{conf}.pcore/results.json")
 
+# Experiment: nctbench
+for bench in ["nctbench.openssl.dh",
+              "nctbench.openssl.bnexp",
+              "nctbench.openssl.ecadd"]:
+    confs = ["base/unsafe"]
+    for conf in ["base/sptsb", "nct/prottrack", "nct/protdelay"]:
+        confs.append(f"{conf}.atret")
+    for conf in confs:
+        experiments["nctbench"].append(
+            f"{bench}/exp/0/nctbench/{conf}.pcore/results.json")
+
 def main():
     parser = argparse.ArgumentParser()
     subparser = parser.add_subparsers(dest="cmd", required=True)
