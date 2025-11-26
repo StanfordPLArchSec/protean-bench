@@ -32,7 +32,7 @@ core_hwconfs = {
     "protdelay": {
         "sim": "protean",
         "gem5_opts": ["--debug-flag=Protean,ProteanRetire,TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--protean=Delay"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--protean=Delay", "--protean-delay-flags-opt"],
     },
     "stt": {
         "sim": "stt",
@@ -51,6 +51,11 @@ core_hwconfs = {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1"],
+    },
+    "sptbugfix": {
+        "sim": "spt",
+        "gem5_opts": ["--debug-flag=TransmitterStalls"],
+        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending", "--moreTransmitInsts=3", "--spt-bugfix-rename"],
     },
     "sptsbbug": {
         "sim": "spt",
