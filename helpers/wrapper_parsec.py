@@ -13,17 +13,17 @@ cmd = [*args.snakemake_cmd]
 benches = [
     "apps/blackscholes",
     # "apps/bodytrack", # NOTE: Disabled due to bug: executes unmapped address.
-    "apps/facesim",
+    # "apps/facesim",
     "apps/ferret",
     "apps/fluidanimate",
-    "apps/freqmine",
-    "apps/raytrace",
+    # "apps/freqmine",
+    # "apps/raytrace",
     "apps/swaptions",
-    "apps/vips",
-    "apps/x264",
+    # "apps/vips",
+    # "apps/x264",
     "kernels/canneal",
     "kernels/dedup",
-    "kernels/streamcluster",
+    # "kernels/streamcluster",
 ]
 if args.bench and len(args.bench) > 0:
     benches = args.bench
