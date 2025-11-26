@@ -215,18 +215,19 @@ def get_leader_file(filename, wildcards):
                   bingroup=wildcards.bingroup,
                   bin=list_bingroup(wildcards.bingroup)[0],
                   filename=filename)
-        
-rule simpoints_json:
-    input:
-        intervals_txt = lambda wildcards: get_leader_file("intervals.txt", wildcards),
-        weights_txt = lambda wildcards: get_leader_file("weights.txt", wildcards),
-        bbvinfo_txt = lambda wildcards: get_leader_file("bbvinfo.txt", wildcards),
-        simpoints_py = "helpers/simpoints.py",
-    output:
-        simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json"
-    threads: 1
-    shell:
-        "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
+
+if config_checkpoint:
+    rule simpoints_json:
+        input:
+            intervals_txt = lambda wildcards: get_leader_file("intervals.txt", wildcards),
+            weights_txt = lambda wildcards: get_leader_file("weights.txt", wildcards),
+            bbvinfo_txt = lambda wildcards: get_leader_file("bbvinfo.txt", wildcards),
+            simpoints_py = "helpers/simpoints.py",
+        output:
+            simpoints_json = "{bench}/cpt/{input}/{bingroup}/simpoints.json"
+        threads: 1
+        shell:
+            "{input.simpoints_py} --intervals={input.intervals_txt} --weights={input.weights_txt} --bbvinfo={input.bbvinfo_txt} > {output.simpoints_json}"
 
 if config_checkpoint:
     checkpoint checkpoint:
