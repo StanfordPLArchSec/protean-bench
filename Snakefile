@@ -40,7 +40,6 @@ if config_compile:
     include: "rules/cpu2017.smk"
     include: "rules/host.smk"
     include: "rules/kvm.smk"
-    include: "rules/parsec.smk"
 
 include: "rules/disasm.smk"
 
@@ -390,3 +389,4 @@ include: "rules/transientfail.smk"
 include: "rules/bearssl.smk"
 include: "rules/ctaes.smk"
 include: "rules/djbsort.smk"
+include: "rules/parsec.smk"
