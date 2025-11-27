@@ -25,16 +25,26 @@ benchsuites = {
         "649.fotonik3d_s",
         # "654.roms_s",
     },
-    "ctbench": {
+    "ctsbench": [
+        "ctsbench.hacl.chacha20",
+        "ctsbench.hacl.curve25519",
+        "ctsbench.hacl.poly1305",
+        "ctsbench.libsodium.salsa20",
+        "ctsbench.libsodium.sha256",
+        "ctsbench.openssl.chacha20",
+        "ctsbench.openssl.curve25519",
+        "ctsbench.openssl.sha256",
+    ],
+    "ctbench": [
         "bearssl",
         "ctaes",
         "djbsort",
-    },
-    "nctbench": {
+    ],
+    "nctbench": [
         "nctbench.openssl.dh",
         "nctbench.openssl.bnexp",
         "nctbench.openssl.ecadd",
-    },
+    ],
 }
 
 if __name__ == "__main__":

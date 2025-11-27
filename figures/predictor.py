@@ -19,22 +19,25 @@ parser.add_argument("--ms", type=int, default=3, help="Marker size")
 parser.add_argument("--lw", type=int, default=1, help="Line width")
 parser.add_argument("--font-size", type=int, default=7, help="Font size")
 parser.add_argument("--no-crop", action="store_true")
+parser.add_argument("--output", "-o", required=True)
+parser.add_argument("--rate-csv", required=True)
+parser.add_argument("--runtime-csv", required=True)
 args = parser.parse_args()
 
 plt.rcParams["font.family"] = "Times New Roman"
 plt.rcParams["font.size"] = args.font_size
 
 # Load and parse predictor mispredict rate (tab-separated)
-mispredict_df = pd.read_csv("predictor-mispredict-rate.csv")
-runtime_df = pd.read_csv("predictor-runtime.csv")
+mispredict_df = pd.read_csv(args.rate_csv)
+runtime_df = pd.read_csv(args.runtime_csv)
 
 # Convert percentage strings to float
 def parse_percent_col(col):
     return col.str.rstrip('%').astype(float) / 100.0
 
 # Process data
-mispredict_rates = mispredict_df.iloc[0].apply(lambda x: float(x.strip("%")))
-runtime_overheads = runtime_df.iloc[0].apply(lambda x: float(x.strip('%')))
+mispredict_rates = mispredict_df.iloc[0].apply(lambda x: x * 100)
+runtime_overheads = runtime_df.iloc[0].apply(lambda x: (x - 1) * 100)
 
 # Format x-axis labels
 predictor_sizes = mispredict_df.columns.to_list()
@@ -108,12 +111,12 @@ plt.setp(ax1.get_xticklabels(), y=0.075)
 
 # plt.title("MierosTrack: Mispredict Rate and Runtime Overhead vs. Predictor Size")
 fig.tight_layout()
-pdf = "predictor.pdf"
+pdf = args.output
 plt.savefig(pdf)
 if not args.no_crop:
     os.system(f"pdf-crop-margins -p10 --modifyOriginal {pdf}")
 # plt.show()
-os.system(f"open {pdf}")
+# os.system(f"open {pdf}")
 
 
 
