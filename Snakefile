@@ -1,6 +1,7 @@
 import glob
 import sys
 import json
+import math
 
 import bench
 from compilers import get_compiler, get_cflags, is_compiler, get_clang
@@ -392,3 +393,8 @@ include: "rules/ctaes.smk"
 include: "rules/djbsort.smk"
 include: "rules/parsec.smk"
 include: "rules/suiteresults.smk"
+include: "rules/wasm.smk"
+
+# Figure stuff.
+include: "figures/predictor.smk"
+include: "tables/class-specific.smk"
