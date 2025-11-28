@@ -21,6 +21,7 @@ rule class_specific_suite_csv:
             conf=class_specific_confs[w.suite])
     output:
         csv = "tables/{suite}.csv",
+        tex = "tables/{suite}.tex",
     run:
         table = []
         base_conf, *defense_confs = class_specific_confs[wildcards.suite]
@@ -44,12 +45,26 @@ rule class_specific_suite_csv:
             geomean_row.append(math.prod(l) ** (1 / len(l)))
         table.append(geomean_row)
         # Dump table as CSV.
+        suite_name, baseline_name = class_specific_names[wildcards.suite]
         with open(output.csv, "wt") as f:
-            suite_name, baseline_name = class_specific_names[wildcards.suite]
             print(f"{suite_name},{baseline_name},Protean (ProtTrack),Protean (ProtDelay)", file=f)
             for row in table:
                 print(",".join(map(str, row)), file=f)
 
-                
-                
-            
+        # Dump table as tabular contents.
+        with open(output.tex, "wt") as f:
+            # Header.
+            print(r"\bf \multirow{2}{*}{\makecell{" + suite_name + "}} & "
+                  r"\bf \multirow{2}{*}{" + baseline_name + "} & "
+                  r"\multicolumn{2}{c!{\vrule width 1pt}}{\bf\textsc{Protean}} "
+                  r"\\\cline{3-4}",
+                  file=f)
+            print(r"&& \bf Track & \bf Delay \\\hline", file=f)
+            for row in table:
+                def fixup_cell(s):
+                    s = str(s)
+                    s = s.removeprefix(wildcards.suite + ".")
+                    if row is table[-1]:
+                        s = r"\it " + s
+                    return s
+                print(" & ".join(map(fixup_cell, row)), file=f)
