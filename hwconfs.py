@@ -94,7 +94,7 @@ def addon_eager(hwconf):
 def addon_noshadow(hwconf):
     sim = hwconf["sim"]
     if sim.startswith("tpt") or sim.startswith("protean"):
-        hwconf["script_opts"] += ["--ptex-mem=None"]
+        hwconf["script_opts"] += ["--protean-mem=None"]
     elif sim.startswith("spt"):
         hwconf["script_opts"] += ["--enableShadowL1=0"]
     else:
@@ -103,7 +103,7 @@ def addon_noshadow(hwconf):
 def addon_shadowmem(hwconf):
     sim = hwconf["sim"]
     if sim.startswith("tpt") or sim.startswith("protean"):
-        hwconf["script_opts"] += ["--ptex-mem=ShadowMem"]
+        hwconf["script_opts"] += ["--protean-mem=ShadowMem"]
     elif sim.startswith("spt"):
         hwconf["script_opts"] += ["--bottomlessShadowL1=1"]
     else:
