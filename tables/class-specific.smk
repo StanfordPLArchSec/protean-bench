@@ -62,9 +62,14 @@ rule class_specific_suite_csv:
             print(r"&& \bf Track & \bf Delay \\\hline", file=f)
             for row in table:
                 def fixup_cell(s):
-                    s = str(s)
+                    if type(s) is not str:
+                        s = f"{s:.3f}"
                     s = s.removeprefix(wildcards.suite + ".")
                     if row is table[-1]:
                         s = r"\it " + s
                     return s
-                print(" & ".join(map(fixup_cell, row)), file=f)
+                print(" & ".join(map(fixup_cell, row)), end="", file=f)
+                if row is table[-1]:
+                    print(r"\\\Xhline{1pt}", file=f)
+                else:
+                    print(r"\\\hline", file=f)
