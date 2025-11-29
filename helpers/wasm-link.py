@@ -38,7 +38,14 @@ def runcmd(cmd):
 runcmd(linkcmd)
 
 # Run the wasm2c command.
-cpath = wasmpath + ".c"
+def makepath(ext):
+    path = wasmpath + ext
+    dir, base = os.path.split(path)
+    if base[0].isdigit():
+        base = "_" + base
+    return os.path.join(dir, base)
+cpath = makepath(".c")
+hpath = makepath(".h")
 runcmd([args.wasm2c, wasmpath, "-o", cpath])
 
 # Run the native compile+link command.
@@ -50,8 +57,9 @@ for c in ["wasm-rt-impl.c", "uvwasi-rt.c", "wasm-rt-runner-static.c", "wasm-rt-o
     nativecmd.append(os.path.join(wasm2c_src, c))
 nativecmd.append("-I" + os.path.join(args.wabt_src, "third_party", "uvwasi", "include"))
 nativecmd.append("-I" + wasm2c_src)
-nativecmd.append(os.path.join(args.wabt_bin, "third_party", "uvwasi", "libuvwasi_a.a"))
+nativecmd.append("-I" + os.getcwd())
+nativecmd.append(os.path.join(args.wabt_bin, "lib", "libuvwasi_a.a"))
+nativecmd.append(os.path.join(args.wabt_bin, "lib", "libuv_a.a"))
 # TODO: Add a command-line switch to this script enable static compiling.
-nativecmd.append("-luv_a")
 nativecmd.append("-lm")
 runcmd(nativecmd)

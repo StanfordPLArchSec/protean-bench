@@ -89,8 +89,14 @@ u32 w2c_wasi__snapshot__preview1_fd_prestat_get(
     struct w2c_wasi__snapshot__preview1* a,
     u32 b,
     u32 c) {
-  printf("HERE\n");
-  return WASI_BADF_ERROR;
+  uvwasi_fd_t fd = i32_load(a->w2c_memory, b);
+  uint32_t prestat_ptr = i32_load(a->w2c_memory, c);
+  uvwasi_prestat_t buf;
+  uvwasi_errno_t err = uvwasi_fd_prestat_get(a->uvwasi, fd, &buf);
+  void *prestat = a->w2c_memory->data + prestat_ptr;
+  uvwasi_serdes_write_prestat_t(prestat, 0, &buf);
+  printf("fd_prestat_get -> %d\n", err);
+  return err;
 }
 
 u32 w2c_wasi__snapshot__preview1_fd_write(
