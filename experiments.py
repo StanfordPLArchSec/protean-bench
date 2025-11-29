@@ -68,6 +68,7 @@ for bench in benches_spec_int:
         experiments[f"predictor"].append(target)
 
 # Experiment: PARSEC.
+# TODO: Initialize using benchsuitess.py
 benches_parsec = [
     "apps/blackscholes",
     # "apps/facesim",
@@ -135,6 +136,15 @@ for bench in benches_spec_int:
         experiments["access"].append(
             f"{bench}/exp/0/main/{conf}.pcore/results.json")
 
+# Experiment: wasmbench
+for bench in ["wasm.401.bzip2", "wasm.429.mcf", "wasm.462.libquantum",
+              "wasm.473.astar", "wasm.433.milc", "wasm.444.namd",
+              "wasm.470.lbm"]:
+    confs = ["unsafe", "stt.atret", "prottrack.atret", "protdelay.atret"]
+    for conf in confs:
+        experiments["wasmbench"].append(
+            f"{bench}/exp/0/base/base/{conf}.pcore/results.json")
+        
 # Experiment: ctbench
 for bench in ["bearssl", "ctaes", "djbsort"]:
     confs = ["base/unsafe"]
