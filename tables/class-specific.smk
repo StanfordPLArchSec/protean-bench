@@ -65,6 +65,8 @@ rule class_specific_suite_csv:
                     if type(s) is not str:
                         s = f"{s:.3f}"
                     s = s.removeprefix(wildcards.suite + ".")
+                    s = s.replace("openssl", "ossl")
+                    s = s.replace("libsodium", "sodium")
                     if row is table[-1]:
                         s = r"\it " + s
                     return s
