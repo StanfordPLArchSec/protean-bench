@@ -22,6 +22,7 @@ rule build_nginx:
         "applications/{bin}/nginx/sbin/nginx"
     params:
         conf = lambda w: expand("applications/{bin}/nginx/conf", bin=w.bin)
+    container: "nginx.sif"
     shell:
         "make -C {input.src} -j`nproc` && "
         "make -C {input.src} -j`nproc` install && "

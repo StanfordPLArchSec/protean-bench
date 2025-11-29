@@ -60,8 +60,6 @@ rule build_wasm_cpu2006:
         "-DTEST_SUITE_COLLECT_COMPILE_TIME=0 "
         "-DTEST_SUITE_USE_PERF=1 "
         " && "
-        # "cmake --build {params.test_suite_build} --target timeit-target "
-        # " && "
         "cmake --build {params.test_suite_build} --target {wildcards.bench} "
         " && "
         "BENCH_DIR=$PWD/{params.test_suite_build}/External/SPEC/C{params.type}2006/{wildcards.bench} "
@@ -71,4 +69,6 @@ rule build_wasm_cpu2006:
         "ls $BENCH_DIR"
         " && "
         "ln -sf $BENCH_DIR {params.run} "
+        " && "
+        "cp {params.run}/data/ref/input/* {params.run}/ "
 
