@@ -1,3 +1,5 @@
+include: "siege.smk"
+
 rule webserv_run:
     input:
         nginx = "applications/{bin}/nginx/sbin/nginx",
