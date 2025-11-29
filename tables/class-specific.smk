@@ -9,7 +9,7 @@ class_specific_confs = {
 class_specific_names = {
     "ctsbench": ["CTS-Crypto", "SPT"],
     "ctbench": ["CT-Crypto", "SPT"],
-    "nctbench": ["UNR-Crypto", "SPT-SB"],
+    "nctbench": [r"UNR-\\Crypto", r"\makecell{SPT-\\SB}"],
 }
 
 rule class_specific_suite_csv:
