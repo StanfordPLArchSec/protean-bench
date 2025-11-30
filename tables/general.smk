@@ -23,7 +23,7 @@ general_defense_names = {
 def general_confs(bin):
     l = ["base/unsafe"]
     l += expand("base/{defense}.atret", defense = general_defenses[bin])
-    l += expand("{bin}/prot{mech}.atret", bin = bin, mech = ["track", "delay"])
+    l += expand("{bin}/prot{mech}.atret", bin = general_bins[bin], mech = ["track", "delay"])
     return l
 
 rule general_suite_csv:
@@ -37,7 +37,7 @@ rule general_suite_csv:
 
         # PARSEC
         parsec = lambda w: expand(
-            "parsec/pkgs/{bench}/run/exp/{conf}/stamp.txt",
+            "parsec/pkgs/{bench}/run/exp/{conf}/stats.txt",
             bench = benchsuites.benchsuites["parsec"],
             conf = general_confs(w.bin)),
 
@@ -54,7 +54,7 @@ rule general_suite_csv:
             return j["stats"]["cycles"]
         def parsec_cycles_single(bench, conf):
             path = f"parsec/pkgs/{bench}/run/exp/{conf}/stats.txt"
-            assert path in input.parsec
+            assert path in input.parsec, path
             matches = []
             with open(path) as f:
                 for line in f:
@@ -64,7 +64,7 @@ rule general_suite_csv:
             return matches[-1]
         def suite_geomean_cycles(suite, f, *args):
             l = []
-            for bench in benchsuites.benchsuite[suite]:
+            for bench in benchsuites.benchsuites[suite]:
                 x = f(bench, *args)
                 l.append(x)
             return math.prod(l) ** (1 / len(l))
@@ -91,7 +91,7 @@ rule general_suite_csv:
                 row[i] = f"{row[i]:.3f}"
                 
         # Generate the CSV.
-        prior_defense_name = general_defense_names[general_defenses[wildcard.bin]]
+        prior_defense_name = general_defense_names[general_defenses[wildcards.bin]]
         with open(output.csv, "wt") as f:
             print(f"Suite,{prior_defense_name},Protean (ProtTrack),Protean (ProtDelay)",
                   file=f)
@@ -104,11 +104,11 @@ rule general_suite_csv:
             s = r"""
 \begin{tabular}{!{\vrule width 1pt}c|c|c|c|c!{\vrule width 1pt}}\Xhline{1pt}
         \multicolumn{2}{!{\vrule width 1pt}c|}{\multirow{2}{*}{\bf """ + wildcards.bin.upper() + r"""}}
-        & \multirow{2}{*}{\bf """ + prior_defense_name + r""""} & \multicolumn{2}{c!{\vrule width 1pt}}{\bf\ourdefense{}} \\\Xcline{4-5}{0.125pt}
+        & \multirow{2}{*}{\bf """ + prior_defense_name + r"""} & \multicolumn{2}{c!{\vrule width 1pt}}{\bf\ourdefense{}} \\\Xcline{4-5}{0.125pt}
         \multicolumn{2}{!{\vrule width 1pt}c|}{} && \bf Track & \bf Delay \\\hline
-        \multicolumn{1}{!{\vrule width 1pt}c!{\vrule width 0.125pt}}{\multirow{2}{2.5em}{\textit{SPEC\allowbreak{}2017}}} & \it P-core & """ + "&".join(row[0]) + r"""\\\cline{2-5}
-         \multicolumn{1}{!{\vrule width 1pt}c!{\vrule width 0.125pt}}{}                                          & \it E-core & """ + "&".join(row[1]) + r""" \\\hline
-        \multicolumn{2}{!{\vrule width 1pt}c|}{\it PARSEC}                      & """ + "&".join(row[2]) + r""" \\\Xhline{1pt}
+        \multicolumn{1}{!{\vrule width 1pt}c!{\vrule width 0.125pt}}{\multirow{2}{2.5em}{\textit{SPEC\allowbreak{}2017}}} & \it P-core & """ + "&".join(table[0]) + r"""\\\cline{2-5}
+         \multicolumn{1}{!{\vrule width 1pt}c!{\vrule width 0.125pt}}{}                                          & \it E-core & """ + "&".join(table[1]) + r""" \\\hline
+        \multicolumn{2}{!{\vrule width 1pt}c|}{\it PARSEC}                      & """ + "&".join(table[2]) + r""" \\\Xhline{1pt}
     \end{tabular}
             """
             print(s, file=f)
