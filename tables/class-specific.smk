@@ -45,6 +45,7 @@ rule class_specific_suite_csv:
             base_cycles = cycles(bench, base_conf)
             for conf in defense_confs:
                 table[-1].append(cycles(bench, conf) / base_cycles)
+
         # Compute geomean.
         geomean_row = ["geomean"]
         for i in range(1, len(table[0])):
@@ -53,6 +54,7 @@ rule class_specific_suite_csv:
                 l.append(row[i])
             geomean_row.append(math.prod(l) ** (1 / len(l)))
         table.append(geomean_row)
+
         # Dump table as CSV.
         suite_name, baseline_name = class_specific_names[wildcards.suite]
         with open(output.csv, "wt") as f:
@@ -76,7 +78,8 @@ rule class_specific_suite_csv:
                     s = s.removeprefix(wildcards.suite + ".")
                     s = s.replace("openssl", "ossl")
                     s = s.replace("libsodium", "sodium")
-                    s = s.removeprefix("wasm.")
+                    if m := re.match(r"wasm\.4\d\d\.", s):
+                        s = s.removeprefix(m.group(0))
                     if row is table[-1]:
                         s = r"\it " + s
                     return s
