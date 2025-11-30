@@ -131,7 +131,8 @@ for bench in benches_spec_int:
     confs = ["base/unsafe"]
     for binary in ["base", "ct"]:
         for mode in ["", ".access"]:
-            confs.append(f"{binary}/prottrack{mode}.atret")
+            for mech in ["track", "delay"]:
+                confs.append(f"{binary}/prot{mech}{mode}.atret")
     for conf in confs:
         experiments["access"].append(
             f"{bench}/exp/0/main/{conf}.pcore/results.json")
@@ -180,6 +181,15 @@ for bench in ["nctbench.openssl.dh",
     for conf in confs:
         experiments["nctbench"].append(
             f"{bench}/exp/0/nctbench/{conf}.pcore/results.json")
+
+# Experiment: webserver
+for input in ["c1r1", "c2r2", "c4r4", "c1r4", "c4r1"]:
+    confs = ["base/unsafe.se", "base/sptsb.se.atret",
+             "nct.ossl-annot/prottrack.se.atret",
+             "nct.ossl-annot/protdelay.se.atret"]
+    for conf in confs:
+        experiments["webserver"].append(
+            f"webserv/exp/{input}/{conf}/stamp.txt")
 
 def main():
     parser = argparse.ArgumentParser()
