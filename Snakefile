@@ -7,8 +7,8 @@ import bench
 from compilers import get_compiler, get_cflags, is_compiler, get_clang
 from hwconfs import get_hwconf
 
-config_compile = int(config.get("compile", "1"))
-config_checkpoint = int(config.get("checkpoint", "1"))
+config_compile = int(config.get("compile", "0"))
+config_checkpoint = int(config.get("checkpoint", "0"))
 
 container: "ptex.sif"
 
@@ -58,9 +58,10 @@ def list_bingroup(name):
         raise KeyError(f"bingroup '{bingroup}' does not exist!")
     return bingroups[name]
 
-re_name = r"(\w|[.-])+"
+re_name = r"[A-Za-z0-9.-](\w|[.-])*"
 wildcard_constraints:
     bench = re_name,
+    suite = re_name,
     input = re_name,
     bingroup = re_name,
     bin = re_name,
@@ -398,3 +399,6 @@ include: "rules/wasm.smk"
 # Figure stuff.
 include: "figures/predictor.smk"
 include: "tables/class-specific.smk"
+include: "tables/general.smk"
+include: "results/protl1-variants.smk"
+include: "results/protcc-overhead.smk"
