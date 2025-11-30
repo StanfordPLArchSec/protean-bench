@@ -1,0 +1,9 @@
+We find that \ourisa{}'s ProtL1 is
+critical to \ourdefense{}'s performance, and tracking memory
+protection beyond the L1D has diminished benefit.
+When disabled, \ourdefense{}-Track-ARCH/CT's overhead increases from
+@protl1@ to @noprotmem@ on the SPEC2017 Integer
+benchmarks running on a P-core. When the ProtL1 is re-
+placed with a shadow memory that perfectly tracks protection,
+PROTEAN-Track-ARCH/CT’s drops to @shadowprotmem@, primarily
+benefiting \nsa{}, but not \constanttime{}, code.
