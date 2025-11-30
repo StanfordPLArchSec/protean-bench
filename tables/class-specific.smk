@@ -4,20 +4,28 @@ class_specific_confs = {
     "ctsbench": ["base/unsafe", "base/spt.atret", "cts/prottrack.atret", "cts/protdelay.atret"],
     "ctbench": ["base/unsafe", "base/spt.atret", "ct/prottrack.atret", "ct/protdelay.atret"],
     "nctbench": ["base/unsafe", "base/sptsb.atret", "nct/prottrack.atret", "nct/protdelay.atret"],
+    "wasmbench": ["base/unsafe", "base/stt.atret", "base/prottrack.atret", "base/protdelay.atret"],
 }
 
 class_specific_names = {
     "ctsbench": ["CTS-Crypto", "SPT"],
     "ctbench": ["CT-Crypto", "SPT"],
     "nctbench": [r"UNR-\\Crypto", r"\makecell{SPT-\\SB}"],
+    "wasmbench": ["ARCH-Wasm", "STT"],
 }
+
+def class_specific_group(suite):
+    if suite == "wasmbench":
+        return "base"
+    else:
+        return suite
 
 rule class_specific_suite_csv:
     input:
         lambda w: expand(
-            "{bench}/exp/0/{suite}/{conf}.pcore/results.json",
+            "{bench}/exp/0/{group}/{conf}.pcore/results.json",
             bench=benchsuites.benchsuites[w.suite],
-            suite=w.suite,
+            group=class_specific_group(w.suite),
             conf=class_specific_confs[w.suite])
     output:
         csv = "tables/{suite}.csv",
@@ -25,8 +33,9 @@ rule class_specific_suite_csv:
     run:
         table = []
         base_conf, *defense_confs = class_specific_confs[wildcards.suite]
+        group = class_specific_group(wildcards.suite)
         def cycles(bench, conf):
-            path = f"{bench}/exp/0/{wildcards.suite}/{conf}.pcore/results.json"
+            path = f"{bench}/exp/0/{group}/{conf}.pcore/results.json"
             assert path in input
             with open(path) as f:
                 j = json.load(f)
@@ -67,6 +76,7 @@ rule class_specific_suite_csv:
                     s = s.removeprefix(wildcards.suite + ".")
                     s = s.replace("openssl", "ossl")
                     s = s.replace("libsodium", "sodium")
+                    s = s.removeprefix("wasm.")
                     if row is table[-1]:
                         s = r"\it " + s
                     return s
