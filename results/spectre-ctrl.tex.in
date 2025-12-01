@@ -1,0 +1,3 @@
+\ourdefense{}-Track-ARCH/CT average @prottrack_arch@/@prottrack_ct@ runtime overhead on the SPEC2017 Integer benchmarks \new{running on a P-core} under the noncomprehensive \spectrectrl{} speculation model (\S\ref{sec:background:speculation-model}),
+whereas STT/SPT average @stt@/@spt@.
+\ourdefense{}-CT only performs worse than SPT because of \ctcc{}'s instrumentation overhead (@unsafe_ct@, \S\ref{sec:results:ourcc-overhead}).

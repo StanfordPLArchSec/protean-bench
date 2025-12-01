@@ -1,0 +1,5 @@
+To approximate the performance of \theirdelay{}/\theirtrack{} (\S\ref{sec:protmech:theirs}) under \ptex{},
+we disable
+\ourtrack{}'s access predictor (\S\ref{sec:predictor})
+and \ourdelay{}'s selective wakeup optimizations (\S\ref{sec:protmech:delay}).
+Doing so adds a substantial @access_overhead@ runtime overhead averaged across \sboxcc{}- and \ctcc{}-compiled SPEC2017 Integer benchmarks running on a P-core.

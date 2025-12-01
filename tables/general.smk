@@ -17,7 +17,7 @@ general_defenses = {
 general_defense_names = {
     "stt": "STT",
     "spt": "SPT",
-    "sptsb": "SPT-SB",
+    "sptsb": r"\makecell{SPT-\\SB}",
 }
 
 def general_confs(bin):

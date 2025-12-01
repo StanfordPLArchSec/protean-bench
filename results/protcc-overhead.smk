@@ -44,13 +44,14 @@ rule protcc_overhead:
         for f in [codesize, cycles]:
             table.append([])
             for bin in ["base", "cts", "ct", "nct"]:
-                table.append(f(bin))
+                table[-1].append(f(bin))
 
         # Compute the overheads.
         for row in table:
+            z = row[0]
             for i in range(len(row)):
-                x = row[i] / row[0]
-                x = (row[i] - 1) * 100
+                x = row[i] / z
+                x = (x - 1) * 100
                 row[i] = f"{x:.1f}\\%"
 
         for i in range(len(table)):
