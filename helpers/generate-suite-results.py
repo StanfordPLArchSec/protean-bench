@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
+import collections
 import json
+import math
 
 def read_input(path):
     with open(path) as f:

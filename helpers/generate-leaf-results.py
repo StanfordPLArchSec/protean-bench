@@ -100,7 +100,7 @@ if os.path.isfile(dbgout_path):
         for line in f:
             if line.startswith("STALL:"):
                 stalls += int(line.split()[3])
-            if line.startswith("TPT pred-"):
+            if line.startswith("Protean pred-"):
                 pred, real, prot = line.split()[1].split("-")[1]
                 if prot == "u":
                     access_preds += 1
