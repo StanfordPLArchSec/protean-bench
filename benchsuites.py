@@ -61,7 +61,14 @@ benchsuites = {
         "wasm.462.libquantum",
         # "wasm.473.astar",
         "wasm.470.lbm",
-    ]
+    ],
+    "webserv": [
+        "c1r1",
+        "c2r2",
+        "c1r4",
+        "c4r1",
+        "c4r4",
+    ],
 }
 
 benchsuites["cpu2017"] = \
