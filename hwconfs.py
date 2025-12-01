@@ -11,13 +11,7 @@ core_hwconfs = {
         "sim": "spt",
         "gem5_opts": ["--debug-flag=TransmitterStalls"],
         "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending",
-                        "--moreTransmitInsts=3"],
-    },
-    "spt2": {
-        "sim": "spt",
-        "gem5_opts": ["--debug-flag=TransmitterStalls"],
-        "script_opts": ["--ruby", "--enable-prefetch", "--spt", "--fwdUntaint=1", "--bwdUntaint=1", "--enableShadowL1=1", "--spt-bugfix-pending",
-                        "--moreTransmitInsts=3", "--spt-bugfix-rename"],
+                        "--moreTransmitInsts=3", "--spt-bugfix-rename", "--spt-bugfix-datasize"],
     },
     "sptsb": {
         "sim": "spt",
