@@ -19,7 +19,8 @@ rule build_nginx:
         src = "applications/{bin}/nginx/src",
         conf = "rules/nginx.zip",
     output:
-        "applications/{bin}/nginx/sbin/nginx"
+        exe = "applications/{bin}/nginx/sbin/nginx",
+        conf = "applications/{bin}/nginx/conf/nginx.conf",
     params:
         conf = lambda w: expand("applications/{bin}/nginx/conf", bin=w.bin)
     container: "nginx.sif"
