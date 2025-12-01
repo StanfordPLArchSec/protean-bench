@@ -1,3 +1,7 @@
 scons
 snakemake
 snakemake-executor-plugin-slurm
+pandas
+matplotlib
+scipy
+pdfCropMargins
