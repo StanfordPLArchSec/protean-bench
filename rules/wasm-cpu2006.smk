@@ -1,12 +1,12 @@
 import bench
 
 bench.make_bench("wasm.401.bzip2").add_input("data/ref/input/input.source 280", mem_size="10GiB")
-bench.make_bench("wasm.429.mcf").add_input("data/ref/input/inp.in", mem_size="10GiB")
+bench.make_bench("wasm.429.mcf").add_input("data/ref/input/inp.in", mem_size="10GiB", resume_mem="16GiB")
 bench.make_bench("wasm.462.libquantum").add_input("1397 8", mem_size="10GiB")
 bench.make_bench("wasm.473.astar").add_input("BigLakes2048.cfg", mem_size="10GiB")
-bench.make_bench("wasm.433.milc").add_input(stdin="data/ref/input/su3imp.in", mem_size="10GiB")
+bench.make_bench("wasm.433.milc").add_input(stdin="data/ref/input/su3imp.in", mem_size="10GiB", resume_mem="16GiB")
 bench.make_bench("wasm.444.namd").add_input("--input data/all/input/namd.input --iterations 38 --output namd.out", mem_size="10GiB")
-bench.make_bench("wasm.470.lbm").add_input("3000 reference.dat 0 0 100_100_130_ldc.of", mem_size="10GiB")
+bench.make_bench("wasm.470.lbm").add_input("3000 reference.dat 0 0 100_100_130_ldc.of", mem_size="10GiB", resume_mem="16GiB")
 
 def cpu2006_type(w):
     int = {"401.bzip2", "429.mcf", "462.libquantum", "473.astar"}
@@ -41,8 +41,6 @@ rule build_wasm_cpu2006:
     wildcard_constraints:
         bench = r"4\d\d\.[a-zA-Z0-9]+"
     threads: 8
-    resources:
-        # mem = compile_mem
     shell:
         "rm -rf {params.test_suite_build} && "
         "cmake -G Ninja -S {params.test_suite_src} -B {params.test_suite_build} "
@@ -72,3 +70,4 @@ rule build_wasm_cpu2006:
         " && "
         "cp {params.run}/data/ref/input/* {params.run}/ "
 
+# FIXME: Copy ref and all.
