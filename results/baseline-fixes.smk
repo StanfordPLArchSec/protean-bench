@@ -18,11 +18,11 @@ rule baseline_fixes_tex:
         def cycles(hwconf):
             path, = expand("_cpu2017.int/exp/0/main/base/{hwconf}.pcore/results.json",
                            hwconf = hwconf)
-            assert path in input, f"path {path} is not in input list"
+            assert path in input, path
             with open(path) as f:
                 j = json.load(f)
             return j["stats"]["cycles"]["geomean"]
-        base_cycles = cycles("base/unsafe")
+        base_cycles = cycles("unsafe")
         def defense_overhead(hwconf):
             defense_cycles = cycles(f"{hwconf}.atret")
             x = (defense_cycles / base_cycles - 1) * 100
@@ -32,9 +32,9 @@ rule baseline_fixes_tex:
             return f"{diff:.1f}"
 
         text = pathlib.Path(input.template).read_text()
-        text.replace("@stt@", defense_overhead_diff("sttbug", "stt"))
-        text.replace("@spt_slow@", defense_overhead_diff("sptbug", "sptbugfix"))
-        text.replace("@spt_fast@", defense_overhead_diff("spt", "sptbugfix"))
-        text.replace("@sptsb@", defense_overhead_diff("sptsbbug", "sptsb"))
+        text = text.replace("@stt@", defense_overhead_diff("sttbug", "stt"))
+        text = text.replace("@sptslow@", defense_overhead_diff("sptbug", "sptbugfix"))
+        text = text.replace("@sptfast@", defense_overhead_diff("spt", "sptbugfix"))
+        text = text.replace("@sptsb@", defense_overhead_diff("sptsbbug", "sptsb"))
         pathlib.Path(output).write_text(text)
 
