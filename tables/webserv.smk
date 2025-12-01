@@ -63,7 +63,7 @@ rule webserv_table_tex:
                   file=f)
             print(r"&& \bf Track & \bf Delay \\\hline", file=f)
             for row in table:
-                def fixup_cell:
+                def fixup_cell(s):
                     if type(s) is not str:
                         s = f"{s:.3f}"
                     if row is table[-1]:
@@ -76,3 +76,4 @@ rule webserv_table_tex:
                     print(r"\\\hline", file=f)
             
         
+# TODO: Need to look at .se instead.
