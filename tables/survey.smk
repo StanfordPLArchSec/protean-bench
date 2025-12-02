@@ -48,11 +48,11 @@ for suite, group, bin in [
         f"_{suite}/exp/0/{group}/prot{mech}.atret.pcore/results.json")
 
 survey_multi_class_stamps = expand(
-    "webserv/exp/{input}/{conf}.se/stamp.txt",
+    "webserv/exp/{input}/{conf}/stamp.txt",
     input = benchsuites.benchsuites["webserv"],
-    conf = ["base/unsafe", "base/spt.atret",
-            "nct.ossl-annot/prottrack.atret",
-            "nct.ossl-annot/protdelay.atret"])
+    conf = ["base/unsafe.se", "base/spt.se.atret",
+            "nct.ossl-annot/prottrack.se.atret",
+            "nct.ossl-annot/protdelay.se.atret"])
 
 rule survey_table:
     output:
@@ -91,7 +91,7 @@ rule survey_table:
 
         # Multi-class results.
         def seconds_single(conf, input):
-            path = f"webserv/exp/{input}/{conf}.se/stats.txt"
+            path = f"webserv/exp/{input}/{conf}/stats.txt"
             stamp = os.path.join(os.path.dirname(path), "stamp.txt")
             assert stamp in input.multi_class_stamps
             l = []
@@ -109,8 +109,8 @@ rule survey_table:
             return math.mult(l) ** (1 / len(l))
 
         def defense_multi_overhead(conf):
-            base_seconds = seconds("base/unsafe")
-            defense_seconds = seconds(f"{conf}.atret")
+            base_seconds = seconds("base/unsafe.se")
+            defense_seconds = seconds(f"{conf}.se.atret")
             x = (defense_seconds / base_seconds - 1) * 100
             return f"{x:.0f}"
 
