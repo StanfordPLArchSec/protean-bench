@@ -2,10 +2,10 @@ import benchsuites
 import os
 
 webserv_confs = [
-    "base/unsafe",
-    "base/sptsb.atret",
-    "nct.ossl-annot/prottrack.atret",
-    "nct.ossl-annot/protdelay.atret",
+    "base/unsafe.se",
+    "base/sptsb.se.atret",
+    "nct.ossl-annot/prottrack.se.atret",
+    "nct.ossl-annot/protdelay.se.atret",
 ]
 
 rule webserv_table_tex:
@@ -74,6 +74,3 @@ rule webserv_table_tex:
                     print(r"\\\Xhline{1pt}", file=f)
                 else:
                     print(r"\\\hline", file=f)
-            
-        
-# TODO: Need to look at .se instead.
