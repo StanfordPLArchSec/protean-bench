@@ -34,7 +34,7 @@ rule baseline_fixes_tex:
         text = pathlib.Path(input.template).read_text()
         text = text.replace("@stt@", defense_overhead_diff("sttbug", "stt"))
         text = text.replace("@sptslow@", defense_overhead_diff("sptbug", "sptbugfix"))
-        text = text.replace("@sptfast@", defense_overhead_diff("spt", "sptbugfix"))
+        text = text.replace("@sptfast@", defense_overhead_diff("sptbug", "spt"))
         text = text.replace("@sptsb@", defense_overhead_diff("sptsbbug", "sptsb"))
         pathlib.Path(output).write_text(text)
 

@@ -1,4 +1,4 @@
 Our security fixes for STT/SPT/SPT-SB (\S\ref{})
 add +@stt@\%/+@sptslow@\%/+@sptsb@\% additional runtime overhead
 on SPEC2017int running on a P-core.
-Our SPT performance fix reduces its overhead by @sptfast@\%.
+Our SPT performance fix reduces its overhead to only +@sptfast@\%.

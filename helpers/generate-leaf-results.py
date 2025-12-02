@@ -96,16 +96,21 @@ if os.path.isfile(dbgout_path):
     stalls = 0
     access_preds = 0
     access_misps = 0
-    with gzip.open(dbgout_path, "rt") as f:
-        for line in f:
-            if line.startswith("STALL:"):
-                stalls += int(line.split()[3])
-            if line.startswith("Protean pred-"):
-                pred, real, prot = line.split()[1].split("-")[1]
-                if prot == "u":
-                    access_preds += 1
-                    if pred != real:
-                        access_misps += 1
+    try:
+        with gzip.open(dbgout_path, "rt") as f:
+            for line in f:
+                if line.startswith("STALL:"):
+                    stalls += int(line.split()[3])
+                if line.startswith("Protean pred-"):
+                    pred, real, prot = line.split()[1].split("-")[1]
+                    if prot == "u":
+                        access_preds += 1
+                        if pred != real:
+                            access_misps += 1
+    except:
+        stalls = 0
+        access_preds = 0
+        access_misps = 0
     results["stats"]["stalls"] = stalls
     results["stats"]["access-preds"] = access_preds
     results["stats"]["access-misps"] = access_misps
