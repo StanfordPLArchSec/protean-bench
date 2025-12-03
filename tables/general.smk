@@ -60,7 +60,7 @@ rule general_suite_csv:
                 for line in f:
                     if re.match(r"simSeconds", line):
                         matches.append(float(line.split()[1]))
-            assert len(matches) >= 1
+            assert len(matches) >= 1, f"missing simSeconds in {path}"
             return matches[-1]
         def suite_geomean_cycles(suite, f, *args):
             l = []
