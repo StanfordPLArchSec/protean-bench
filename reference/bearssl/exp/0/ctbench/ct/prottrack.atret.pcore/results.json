@@ -1,0 +1,17 @@
+{
+    "weight": 1.0,
+    "stats": {
+        "xmit-taints": 747648.0,
+        "reg-taints": 0.0,
+        "ipc": 1.555061,
+        "stalls": 13070742407.0,
+        "loads": 13466160.0,
+        "load-rate": 0.13465796558150894,
+        "mem-taints": 0.0,
+        "access-misps": 1182.0,
+        "access-preds": 80021.0,
+        "access-misp-rate": 0.014771122580322666,
+        "cycles": 64307914.0,
+        "insts": 100002699.0
+    }
+}
