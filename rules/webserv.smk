@@ -47,7 +47,7 @@ rule webserv_run:
         stdout = "webserv/exp/c{clients}r{reqs}/{bin}/{hwconf}/stdout.txt",
         stderr = "webserv/exp/c{clients}r{reqs}/{bin}/{hwconf}/stderr.txt",
     resources:
-        runtime = "8h"
+        runtime = "16h"
     shell:
         "{input.runner} --port={params.port} "
         "  --nginx \"{input.gem5} --outdir={params.outdir} -re {params.gem5_opts} --debug-file=dbgout.txt.gz "
