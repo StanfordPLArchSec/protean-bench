@@ -38,6 +38,7 @@ rule spectre_ctrl_tex:
         unsafe_ct = defense_overhead("ct/unsafe")
 
         text = pathlib.Path(input.template).read_text()
+        text = text.replace("@unsafe_ct@", unsafe_ct)
         text = text.replace("@prottrack_arch@", prottrack_arch)
         text = text.replace("@prottrack_ct@", prottrack_ct)
         text = text.replace("@stt@", stt)
