@@ -30,6 +30,8 @@ rule class_specific_suite_csv:
     output:
         csv = "tables/{suite}.csv",
         tex = "tables/{suite}.tex",
+    wildcard_constraints:
+        suite = "({})".format("|".join(["wasmbench", "ctsbench", "ctbench", "nctbench"]))
     run:
         table = []
         base_conf, *defense_confs = class_specific_confs[wildcards.suite]
