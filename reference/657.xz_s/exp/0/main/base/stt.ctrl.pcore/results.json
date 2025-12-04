@@ -1,0 +1,14 @@
+{
+    "weight": 0.9999993,
+    "stats": {
+        "ipc": 1.3473777894278525,
+        "insts": 50000063.1491637,
+        "load-rate": 0.2251177533169907,
+        "access-misp-rate": 0.0,
+        "cycles": 40413946.5728043,
+        "stalls": 0.0,
+        "access-misps": 0.0,
+        "loads": 11255900.305680014,
+        "access-preds": 0.0
+    }
+}

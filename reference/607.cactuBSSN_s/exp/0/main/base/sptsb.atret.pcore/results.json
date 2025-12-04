@@ -1,0 +1,22 @@
+{
+    "weight": 0.99999944,
+    "stats": {
+        "ipc": 0.4834985399917223,
+        "access-misp-rate": 0.0,
+        "unprot-regs-rate": 0.19306060890463644,
+        "unprot-regs-inst": 0.2637264159979679,
+        "unprot-regs": 13193350.203742806,
+        "prot-regs": 55654689.74060746,
+        "pub-annot-load-rate": 0,
+        "access-preds": 0.0,
+        "pub-annot-load-count": 0.0,
+        "pub-annot-reg-rate": 0,
+        "insts": 50013364.276288755,
+        "access-misps": 0.0,
+        "annot-load-count": 0.0,
+        "loads": 19131302.39145116,
+        "load-rate": 0.3826029627950284,
+        "cycles": 109644106.47626185,
+        "stalls": 3085589482278.3594
+    }
+}

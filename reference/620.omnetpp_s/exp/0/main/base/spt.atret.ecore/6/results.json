@@ -1,0 +1,31 @@
+{
+    "simpoint": {
+        "interval": 9429,
+        "weight": 0.225821,
+        "waypoints": [
+            120385726821,
+            120388265858,
+            120400929522
+        ],
+        "name": "6"
+    },
+    "stats": {
+        "insts": 50000048.0,
+        "ipc": 0.56836,
+        "cycles": 87972476.0,
+        "pub-annot-reg-rate": NaN,
+        "pub-annot-load-rate": NaN,
+        "pub-annot-load-count": 0.0,
+        "annot-load-count": 0.0,
+        "prot-regs": 46990795.0,
+        "unprot-regs": 56778579.0,
+        "loads": 17182909.0,
+        "load-rate": 0.3436578500884639,
+        "stalls": 151783633000,
+        "access-preds": 0,
+        "access-misps": 0,
+        "access-misp-rate": 0,
+        "unprot-regs-inst": 1.1355704898523298,
+        "unprot-regs-rate": 0.5471612366091753
+    }
+}

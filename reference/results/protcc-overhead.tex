@@ -1,0 +1,8 @@
+We evaluate the runtime and code size overhead of compiling with \ourcc{}'s three non-trivial passes (\S\ref{sec:compiler:passes})
+on the SPEC2017int benchmarks.
+We find that \ourcc{}-CTS/CT/UNR binaries average 8.1\%/20.2\%/6.0\% code size overhead 
+and 2.7\%/5.3\%/1.3\% runtime overhead
+when \ourdefense{}'s protections are disabled.
+\ctcc{} binaries exhibit higher code size and runtime overhead
+primarily because they insert more identity copies
+than \ctscc{} (\sboxcc{} and -UNR do not insert any).

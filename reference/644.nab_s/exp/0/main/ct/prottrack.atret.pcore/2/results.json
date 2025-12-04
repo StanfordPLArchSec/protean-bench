@@ -1,0 +1,26 @@
+{
+    "simpoint": {
+        "interval": 117441,
+        "weight": 0.185467,
+        "waypoints": [
+            1619533374252,
+            1619536845174,
+            1619554112092
+        ],
+        "name": "2"
+    },
+    "stats": {
+        "insts": 52130579.0,
+        "ipc": 1.449335,
+        "cycles": 35968616.0,
+        "reg-taints": 0.0,
+        "mem-taints": 0.0,
+        "xmit-taints": 2636961.0,
+        "loads": 18198131.0,
+        "load-rate": 0.34908745210752407,
+        "stalls": 43977125547,
+        "access-preds": 6715983,
+        "access-misps": 43017,
+        "access-misp-rate": 0.006405168089317677
+    }
+}
