@@ -44,13 +44,13 @@ for suite, group, bin in [
         ("nctbench", "nctbench", "nct"),
 ]:
     for mech in ["delay", "track"]:
-    survey_single_class_results.append(
-        f"_{suite}/exp/0/{group}/prot{mech}.atret.pcore/results.json")
+        survey_single_class_results.append(
+            f"_{suite}/exp/0/{group}/{bin}/prot{mech}.atret.pcore/results.json")
 
 survey_multi_class_stamps = expand(
     "webserv/exp/{input}/{conf}/stamp.txt",
     input = benchsuites.benchsuites["webserv"],
-    conf = ["base/unsafe.se", "base/spt.se.atret",
+    conf = ["base/unsafe.se", "base/sptsb.se.atret",
             "nct.ossl-annot/prottrack.se.atret",
             "nct.ossl-annot/protdelay.se.atret"])
 
