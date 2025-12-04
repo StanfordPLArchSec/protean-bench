@@ -3,8 +3,9 @@ rule clone_libsodium:
         directory("libraries/{bin}/libsodium/src")
     params:
         git_url = "https://github.com/jedisct1/libsodium.git",
+        git_tag = "1.0.20-RELEASE",
     shell:
-        "git clone {params.git_url} {output} -b 1.0.20-RELEASE"
+        "git clone {params.git_url} {output} -b {params.git_tag}"
 
 rule configure_libsodium:
     input:

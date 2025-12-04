@@ -7,9 +7,11 @@ rule clone_ctaes:
     output:
         git_repo = directory("ctaes/bin/{bin}/git")
     params:
-        git_url = "https://github.com/bitcoin-core/ctaes"
+        git_url = "https://github.com/bitcoin-core/ctaes",
+        commit = "3b10b89b05ca1ef5fff33316777249df25c8b930",
     shell:
-        "git clone {params.git_url} {output.git_repo}"
+        "git clone {params.git_url} {output.git_repo} && "
+        "git -C {params.git_repo} checkout {params.commit}"
 
 rule build_ctaes:
     input:
