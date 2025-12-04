@@ -5,8 +5,8 @@ ptex = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 base_cflags = ["-mno-avx"]
 
-def make_compiler(name, flags):
-    src = f"../llvm/{name}"
+def make_compiler(flags):
+    src = f"../llvm"
     bin = f"{src}/build"
     return {
         # ../llvm/name-17/build
@@ -18,11 +18,10 @@ def make_compiler(name, flags):
                   
 
 core_compilers = {
-    "base": make_compiler("base-17", []),
-    "ct": make_compiler("ptex-17", ["-mllvm", "-x86-ptex=ct"]),
-    "cts": make_compiler("ptex-17", ["-mllvm", "-x86-ptex=cts", "-mllvm", "-x86-ptex-ptrs"]),
-    "nct": make_compiler("ptex-17", ["-mllvm", "-x86-ptex=nct"]),
-    "nctx": make_compiler("ptex-17-fn", ["-mllvm", "-x86-ptex=nct"]),
+    "base": make_compiler(["-mllvm", "-x86-ptex=arch"]),
+    "ct": make_compiler(["-mllvm", "-x86-ptex=ct"]),
+    "cts": make_compiler(["-mllvm", "-x86-ptex=cts", "-mllvm", "-x86-ptex-ptrs"]),
+    "nct": make_compiler(["-mllvm", "-x86-ptex=nct"]),
 }
 
 g_addons = {
