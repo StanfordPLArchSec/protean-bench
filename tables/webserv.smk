@@ -1,5 +1,6 @@
 import benchsuites
 import os
+from pathlib import Path
 
 webserv_confs = [
     "base/unsafe.se",
@@ -10,8 +11,8 @@ webserv_confs = [
 
 rule webserv_table_tex:
     input:
-        expand("webserv/exp/{input}/{conf}/stamp.txt",
-               input = benchsuites.benchsuites["webserv"],
+        expand("webserv/exp/{inp}/{conf}/stamp.txt",
+               inp = benchsuites.benchsuites["webserv"],
                conf = webserv_confs)
     output:
         csv = "tables/webserv.csv",
@@ -19,23 +20,23 @@ rule webserv_table_tex:
     run:
         table = []
         base_conf, *defense_confs = webserv_confs
-        def seconds(input, conf):
-            path, = expand("webserv/exp/{input}/{conf}/stats.txt",
-                           input = input,
+        def seconds(inp, conf):
+            path, = expand("webserv/exp/{inp}/{conf}/stats.txt",
+                           inp = inp,
                            conf = conf)
-            stamp = os.path.join(os.path.dirname(path), "stamp.txt")
-            assert stamp in input, stamp
+            stamp = Path(path).with_name("stamp.txt")
+            assert str(stamp) in input, f"{stamp=}\n{input=}"
             l = []
-            for line in pathlib.Path(path).read_text().splitlines():
+            for line in Path(path).read_text().splitlines():
                 if m := re.match(r"simSeconds\s+([0-9.]+)", line):
                     l.append(m.group(1))
             assert len(l) >= 1
             return float(l[-1])
-        for input in benchsuites.benchsuites["webserv"]:
-            table.append([f"nginx.{bench}"])
-            base_seconds = seconds(input, base_conf)
+        for inp in benchsuites.benchsuites["webserv"]:
+            table.append([f"nginx.{inp}"])
+            base_seconds = seconds(inp, base_conf)
             for defense_conf in defense_confs:
-                defense_seconds = seconds(input, defense_conf)
+                defense_seconds = seconds(inp, defense_conf)
                 table[-1].append(defense_seconds / base_seconds)
 
         # Compute geomean.
