@@ -1,0 +1,11 @@
+\begin{tabular}{|l|l|l|l|l|l|l|l|}\hline
+        \multirow{2}{*}{\it Defense} & \multirow{2}{*}{\it \Protset{}} & \multirow{2}{*}{\it \makecell{Protection \\  mechanism}} & \multicolumn{5}{c|}{\it Vulnerable program class} \\\cline{4-8} 
+        &&& \textit{\SBOX{}} & \textit{\CTS{}} & \textit{\CT{}} & \textit{UNR} & \it \scriptsize \makecell{multiple \\ (\Cref{fig:intro:hybrid})} \\\hline
+        NDA & all mem & AccessDelay & \cmark{} & \xmark{} & \xmark{} & \xmark{} & \xmark{} \\\hline
+        SpecShield & all mem & AccessDelay & \cmark{} & \xmark{} & \xmark{} & \xmark{} & \xmark{} \\\hline
+        STT & all mem & AccessTrack & 153\% & \xmark{} & \xmark{} & \xmark{} & \xmark{} \\\hline
+        SPT & unxmitted state & AccessTrack & \color{gray} \cmark{} & \color{gray} 11\% & 36\% & \xmark{} & \xmark{} \\\hline
+        SPT-SB & all state & XmitDelay & \color{gray} \cmark{}  & \color{gray} \cmark{} & \color{gray} \cmark{} & 187\% & \color{gray} 177\% \\\hline
+        \multirow{2}{*}{\textbf{\makecell{\ourdefense{} \\ (ours)}}} & \multirow{2}{*}{\textbf{\makecell{programmable}}} & \bf \ourtrack{} & \bf 7\% & \bf 4\% & \bf 16\% & \bf 169\% & \bf 32\% \\\cline{3-8}
+        && \bf \ourdelay{} & \bf 20\% & \bf 6\% & \bf 22\% & \bf 170\% & \bf 48\% \\\hline
+\end{tabular}
