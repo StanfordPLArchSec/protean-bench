@@ -66,9 +66,12 @@ rule survey_table:
 
         # Single-class results.
         def cycles(suite, conf):
-            path, = expand("_{suite}/exp/0/main/{conf}.pcore/results.json",
-                   suite = suite, conf = conf)
-            assert path in input.single_class_results
+            group = suite
+            if suite == "wasmbench":
+                group = "base"
+            path, = expand("_{suite}/exp/0/{group}/{conf}.pcore/results.json",
+                           suite = suite, group = group, conf = conf)
+            assert path in input.single_class_results, f"{path} not in input list"
             return json.loads(pathlib.Path(path).read_text())["stats"]["cycles"]["geomean"]
 
         def defense_overhead(suite, conf):
@@ -86,12 +89,12 @@ rule survey_table:
             for name, bin, suite in [("arch", "base", "wasmbench"),
                                      ("cts", "cts", "ctsbench"),
                                      ("ct", "ct", "ctbench"),
-                                     ("nct", "nct", "nctbench")]:
+                                     ("unr", "nct", "nctbench")]:
                 d[f"prot{mech}_{name}"] = defense_overhead(suite, f"{bin}/prot{mech}")
 
         # Multi-class results.
-        def seconds_single(conf, input):
-            path = f"webserv/exp/{input}/{conf}/stats.txt"
+        def seconds_single(conf, inp):
+            path = f"webserv/exp/{inp}/{conf}/stats.txt"
             stamp = os.path.join(os.path.dirname(path), "stamp.txt")
             assert stamp in input.multi_class_stamps
             l = []
@@ -104,9 +107,9 @@ rule survey_table:
 
         def seconds(conf):
             l = []
-            for input in benchsuites.benchsuites["webserv"]:
-                l.append(seconds_single(conf, input))
-            return math.mult(l) ** (1 / len(l))
+            for inp in benchsuites.benchsuites["webserv"]:
+                l.append(seconds_single(conf, inp))
+            return math.prod(l) ** (1 / len(l))
 
         def defense_multi_overhead(conf):
             base_seconds = seconds("base/unsafe.se")
