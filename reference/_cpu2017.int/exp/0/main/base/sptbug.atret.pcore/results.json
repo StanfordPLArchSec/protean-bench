@@ -1,0 +1,72 @@
+{
+    "stats": {
+        "pub-annot-load-rate": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "access-misps": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "prot-regs": {
+            "arithmean": 75229156.57227926,
+            "geomean": 72835548.91960527
+        },
+        "loads": {
+            "arithmean": 13766402.245974008,
+            "geomean": 13541037.237375628
+        },
+        "annot-load-count": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "insts": {
+            "arithmean": 50000073.222621515,
+            "geomean": 50000073.22255636
+        },
+        "ipc": {
+            "arithmean": 0.9244672736573598,
+            "geomean": 0.8764190626258331
+        },
+        "unprot-regs-rate": {
+            "arithmean": 0.37110062746649003,
+            "geomean": 0.3499573633324322
+        },
+        "pub-annot-reg-rate": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "access-misp-rate": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "unprot-regs": {
+            "arithmean": 43573507.342529304,
+            "geomean": 41265772.6563867
+        },
+        "stalls": {
+            "arithmean": 112625925663.36142,
+            "geomean": 83672716254.24948
+        },
+        "cycles": {
+            "arithmean": 63667694.4073066,
+            "geomean": 60311079.091971144
+        },
+        "unprot-regs-inst": {
+            "arithmean": 0.8714689242211009,
+            "geomean": 0.8253141693590856
+        },
+        "access-preds": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "pub-annot-load-count": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "load-rate": {
+            "arithmean": 0.27532767886981063,
+            "geomean": 0.2708203526623839
+        }
+    }
+}

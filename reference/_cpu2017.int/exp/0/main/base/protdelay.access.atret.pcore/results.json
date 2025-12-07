@@ -1,0 +1,36 @@
+{
+    "stats": {
+        "xmit-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "reg-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "load-rate": {
+            "arithmean": 0.2753276821012417,
+            "geomean": 0.270820355584685
+        },
+        "loads": {
+            "arithmean": 13766402.474297976,
+            "geomean": 13541037.432690283
+        },
+        "insts": {
+            "arithmean": 50000073.41688585,
+            "geomean": 50000073.41682173
+        },
+        "ipc": {
+            "arithmean": 1.1847691312965771,
+            "geomean": 1.14176644027692
+        },
+        "mem-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "cycles": {
+            "arithmean": 47695988.81485422,
+            "geomean": 45644694.997624606
+        }
+    }
+}
