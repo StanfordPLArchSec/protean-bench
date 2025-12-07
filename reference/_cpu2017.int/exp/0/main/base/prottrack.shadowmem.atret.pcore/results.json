@@ -1,0 +1,52 @@
+{
+    "stats": {
+        "stalls": {
+            "arithmean": 15132637456.086142,
+            "geomean": 2664526680.3954782
+        },
+        "mem-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "reg-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "load-rate": {
+            "arithmean": 0.27532768078888414,
+            "geomean": 0.270820354556629
+        },
+        "cycles": {
+            "arithmean": 40582910.07158992,
+            "geomean": 39247737.20815322
+        },
+        "access-misp-rate": {
+            "arithmean": 0.01917284942625584,
+            "geomean": 0.013364765891119736
+        },
+        "ipc": {
+            "arithmean": 1.3654168946831973,
+            "geomean": 1.3228135173611135
+        },
+        "loads": {
+            "arithmean": 13766402.379869854,
+            "geomean": 13541037.353344413
+        },
+        "access-preds": {
+            "arithmean": 16528974.44341742,
+            "geomean": 16258335.811765462
+        },
+        "xmit-taints": {
+            "arithmean": 0.0,
+            "geomean": 0.0
+        },
+        "access-misps": {
+            "arithmean": 321485.67994622444,
+            "geomean": 219877.24530425787
+        },
+        "insts": {
+            "arithmean": 50000073.309644796,
+            "geomean": 50000073.30958055
+        }
+    }
+}
