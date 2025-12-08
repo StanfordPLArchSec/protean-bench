@@ -32,4 +32,5 @@ rule build_libsodium:
         "libraries/{bin}/libsodium/lib/libsodium.a"
     shell:
         'make -C {input} -j$(nproc) && '
-        'make -C {input} -j$(nproc) install'
+        'make -C {input} -j$(nproc) install && '
+        'rm -rf {input}/config.log'
