@@ -24,7 +24,7 @@ rule configure_openssl:
         'export CC=$(realpath {input.clang}) && '
         'PREFIX=$(realpath {params.prefix}) && '
         'rm -rf {output} && mkdir -p {output} && cd {output} && '
-        '../src/Configure --prefix=$PREFIX no-asm no-tests'
+        '../src/Configure --prefix=$PREFIX no-asm no-tests no-fuzz'
 
 rule build_openssl:
     input:
