@@ -5,7 +5,7 @@ rule clone_hacl:
         git_url = "https://github.com/hacl-star/hacl-star.git",
         git_tag = "ocaml-v0.4.5",
     shell:
-        "git clone {params.git_url} -b {params.git_tag} {output}"
+        "git clone {params.git_url} --depth=1 -b {params.git_tag} {output}"
 
 
 def get_hacl_srcs(w, suffix):
