@@ -7,8 +7,8 @@ import bench
 from compilers import get_compiler, get_cflags, is_compiler, get_clang
 from hwconfs import get_hwconf
 
-config_compile = int(config.get("compile", "0"))
-config_checkpoint = int(config.get("checkpoint", "0"))
+config_compile = 1
+config_checkpoint = 1
 
 container: "ptex.sif"
 
