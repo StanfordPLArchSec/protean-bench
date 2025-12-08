@@ -15,7 +15,7 @@ rule clone_bearssl:
         git_url = "https://www.bearssl.org/git/BearSSL",
         commit = "3d9be2f60b7764e46836514bcd6e453abdfa864a",
     shell:
-        "git clone {params.git_url} {output.git_repo} && "
+        "git clone {params.git_url} --depth=1 {output.git_repo} && "
         "git -C {output.git_repo} checkout {params.commit} && "
         "(cd {output.git_repo} && git apply) < {input.patch} && "
         "CC=$(realpath {input.clang}) "
