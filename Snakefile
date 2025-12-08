@@ -20,7 +20,7 @@ gem5_kvm_src = "../gem5/kvmcpu"
 gem5_kvm_exe = gem5_kvm_src + "/build/X86_MESI_Three_Level/gem5.opt"
 gem5_kvm_configs = gem5_kvm_src + "/configs"
 # TODO: Use this using the 'bin' setup.
-addr2line = "../llvm/base-17/build/bin/llvm-addr2line"
+addr2line = "../llvm/build/bin/llvm-addr2line"
 
 # TODO: Investigate why partial build of libc doesn't work.
 
