@@ -37,7 +37,7 @@ rule general_suite_csv:
 
         # PARSEC
         parsec = lambda w: expand(
-            "parsec/pkgs/{bench}/run/exp/{conf}/stats.txt",
+            "parsec/pkgs/{bench}/run/exp/{conf}/stamp.txt",
             bench = benchsuites.benchsuites["parsec"],
             conf = general_confs(w.bin)),
 
@@ -54,7 +54,7 @@ rule general_suite_csv:
             return j["stats"]["cycles"]
         def parsec_cycles_single(bench, conf):
             path = f"parsec/pkgs/{bench}/run/exp/{conf}/stats.txt"
-            assert path in input.parsec, path
+            assert str(Path(path).with_name("stamp.txt")) in input.parsec, path
             matches = []
             with open(path) as f:
                 for line in f:
