@@ -5,7 +5,7 @@ rule download_wasi_sdk:
     params:
         url = "https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-14/wasi-sdk-14.0-linux.tar.gz"
     shell:
-        "rm -r wasm/wasi-sdk && mkdir -p wasm/wasi-sdk "
+        "rm -rf wasm/wasi-sdk && mkdir -p wasm/wasi-sdk "
         " && "
         "wget -O- {params.url} | "
         "tar -C wasm/wasi-sdk -x --gzip --strip-components=1"
@@ -27,7 +27,7 @@ rule build_wabt:
         build = "wasm/wabt/src/build",
         install = "wasm/wabt",
     shell:
-        "rm -r {params.build} "
+        "rm -rf {params.build} "
         " && "
         "cmake -G Ninja -S {input} -B {params.build} -DCMAKE_BUILD_TYPE=Release "
         "-DCMAKE_INSTALL_PREFIX={params.install} "
@@ -49,7 +49,7 @@ rule build_libuv:
         build = "wasm/wabt/src/third_party/uvwasi/build",
         install = "wasm/wabt",
     shell:
-        "rm -r {params.build} "
+        "rm -rf {params.build} "
         " && "
         "cmake -G Ninja -S {params.src} -B {params.build} "
         "-DCMAKE_BUILD_TYPE=Release "

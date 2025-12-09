@@ -32,7 +32,7 @@ rule derivative_compiler:
         bin = r"\w+",
         addons = r"\w+(\.\w+)*",
     shell:
-        "rm -r {params.outdir} && mkdir {params.outdir} && "
+        "rm -rf {params.outdir} && mkdir {params.outdir} && "
         "ln -s ../../{params.indir}/build {params.outdir}/build && touch {output.build} && "
         "ln -s ../../{params.indir}/src {params.outdir}/src && touch {output.src} && "
         "echo $(cat {input.cflags} {input.addons}) > {output.cflags} && "
