@@ -407,3 +407,7 @@ include: "results/spectre-ctrl.smk"
 include: "results/baseline-fixes.smk"
 include: "tables/webserv.smk"
 include: "tables/survey.smk"
+
+# For the benchmark example.
+from bench import make_bench
+make_bench("example").add_input("30")
