@@ -13,7 +13,6 @@ rule clone_nginx:
         "cd {output} && "
         "sed -i 's|-lssl -lcrypto|{params.cwd}/{input.libssl} {params.cwd}/{input.libcrypto}|g' auto/lib/openssl/conf && "
         "./auto/configure --prefix=$PWD/.. --with-http_ssl_module --with-ld-opt='-static' "
-        "    --without-http_rewrite_module"
 
 rule build_nginx:
     input:
